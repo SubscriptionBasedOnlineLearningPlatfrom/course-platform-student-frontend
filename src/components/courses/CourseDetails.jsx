@@ -11,7 +11,6 @@ import { FaStar } from "react-icons/fa6";
 const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
   const { enrolled, setEnrolled } = useContext(CourseContext);
-
   const navigate = useNavigate();
   const courseId = "637468ac-0476-4db8-bc1a-e03b1d822a46"; //useParams();
   const { BackendAPI } = useApi();

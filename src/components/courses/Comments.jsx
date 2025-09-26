@@ -101,8 +101,6 @@ const Comments = () => {
     setShowReplyForm(null);
   };
 
-  
-
   // Format date
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -282,18 +280,11 @@ const Comments = () => {
           comments.map((comment) => (
             <div key={comment.comment_id} className="border-b border-gray-200 pb-6 last:border-b-0">
               <div className="flex items-start space-x-4">
-                {/* User Avatar */}
-                {/* <img
-                  src={comment.user_avatar}
-                  alt={comment.user_name}
-                  className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                /> */}
 
                 <span className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   {comment.student_name?.charAt(0).toUpperCase() || 'U'}
                 </span>
                 
-
                 <div className="flex-1">
                   {/* User Info and Rating */}
                   <div className="flex items-center justify-between mb-2">

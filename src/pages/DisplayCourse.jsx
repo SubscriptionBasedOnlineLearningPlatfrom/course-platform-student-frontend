@@ -10,7 +10,6 @@ const DisplayCourse = () => {
         <CourseDetails />
         <Comments />
         <RelatedCourses />
-        
     </div>
   )
 }

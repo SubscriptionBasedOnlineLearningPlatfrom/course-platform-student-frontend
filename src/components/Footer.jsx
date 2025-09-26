@@ -26,7 +26,6 @@ const Footer = () => {
               </p>
               <p><a href="" className="text-slate-400 hover:text-[#0173d1] leading-relaxed  max-w-md cursor-pointer">#ProfessionalGrowth</a></p>
               <p><a href="" className="text-slate-400 hover:text-[#0173d1] leading-relaxed  max-w-md cursor-pointer">#E-Learning</a></p>
-              
             </div>
 
             <div className="flex gap-4 pt-8">

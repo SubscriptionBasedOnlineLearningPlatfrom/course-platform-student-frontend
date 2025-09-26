@@ -1,20 +1,20 @@
 import React, { useContext, useEffect } from "react";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import {ChevronRight} from 'lucide-react'
+import { ChevronRight } from "lucide-react";
 import { CourseContext } from "../../contexts/CourseContext";
 
 const CourseModules = () => {
-    const { courseId } = '637468ac-0476-4db8-bc1a-e03b1d822a46' //useParams();
-    const [loading, setLoading] = useState(true);
-    const {modules, setModules} = useContext(CourseContext)
+  const { courseId } = "637468ac-0476-4db8-bc1a-e03b1d822a46"; //useParams();
+  const [loading, setLoading] = useState(true);
+  const { modules, setModules } = useContext(CourseContext);
 
-    useEffect(() => {
-      // Simulate API loading delay
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
-    }, []);
+  useEffect(() => {
+    // Simulate API loading delay
+    setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+  }, []);
 
   return (
     <div>
@@ -23,9 +23,6 @@ const CourseModules = () => {
         {/* Modules Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-            <span className="bg-[#0173d1] text-white rounded-lg p-2 mr-3">
-              📚
-            </span>
             Course Curriculum
           </h2>
 

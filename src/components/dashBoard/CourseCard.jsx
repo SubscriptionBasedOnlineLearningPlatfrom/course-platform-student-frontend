@@ -48,7 +48,6 @@ const CourseCard = ({ course, type, onContinue, onDownloadCertificate, onReviewC
         
         {/* Course Content */}
         <div className="p-6">
-          {/* Category Badge */}
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-3">
             {course.category}
           </span>
@@ -77,7 +76,6 @@ const CourseCard = ({ course, type, onContinue, onDownloadCertificate, onReviewC
           
           {/* Course Meta */}
           <div className="space-y-2 mb-4">
-            
             <div className="flex items-center text-sm text-gray-600">
               <i className="fas fa-calendar mr-2"></i>
               <span>Last accessed: {formatDate(course.updated_at)}</span>
@@ -150,7 +148,6 @@ const CourseCard = ({ course, type, onContinue, onDownloadCertificate, onReviewC
                   {course.score}%
                 </span>
               </div>
-              
             </div>
           </div>
           

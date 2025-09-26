@@ -155,7 +155,6 @@ export const QuizCreation = ({ quiz }) => {
         {/* Quiz Header */}
         <div className="text-center border-b-2 border-gray-100 pb-8 mb-8">
           <h1 className="text-3xl lg:text-4xl font-bold text-gray-800 mb-4">{quiz.quizTitle}</h1>
-          
         </div>
 
         {/* Progress Bar */}

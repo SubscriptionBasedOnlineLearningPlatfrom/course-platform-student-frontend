@@ -27,11 +27,9 @@ export const CourseProvider = ({ children }) => {
       const response = await axios.get(
         `${BackendAPI}/courses/related-courses/${category}`
       );
-      console.log(response);
       if (response.status === 200) {
         setRelatedCourses(response.data.courses);
       }
-      console.log("Related courses fetched:", response.data.courses);
     } catch (error) {
       console.error("Error fetching related courses:", error);
     }
@@ -55,7 +53,6 @@ export const CourseProvider = ({ children }) => {
       if (response.status === 200) {
         setEnrolledCourses(Object.values(response.data.courses));
       }
-      console.log(response);
     }
     catch (error) {
       console.error("Error fetching enrolled courses:", error);

@@ -48,6 +48,11 @@ const getAllCourses = async () => {
   return response.data;
 };
 
+const getCourseContent = async (courseId) => {
+  const response = await publicApi.get(`/student/course/${courseId}/content`); // after login setup make this api not public
+  return response.data;
+};
+
 // =======================
 // CONTEXT
 // =======================
@@ -63,6 +68,7 @@ export const ApiProvider = ({ children }) => {
         publicApi,   // public API instance
         BackendAPI,  // base URL for students
         getAllCourses,
+        getCourseContent,
       }}
     >
       {children}

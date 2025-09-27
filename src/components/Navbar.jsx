@@ -41,7 +41,7 @@ const Navbar = () => {
               Courses
             </Link>
             <Link
-              to="/login"
+              to="/auth"
               className="hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition duration-200"
             >
               Login
@@ -90,7 +90,7 @@ const Navbar = () => {
             Courses
           </Link>
           <Link
-            to="/login"
+            to="/auth"
             onClick={() => setIsOpen(false)}
             className="block hover:text-blue-600 border-b-2 border-transparent hover:border-blue-600 transition duration-200"
           >

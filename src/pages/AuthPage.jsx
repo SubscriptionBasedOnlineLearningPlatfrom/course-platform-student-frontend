@@ -47,7 +47,7 @@ export const AuthPage = () => {
       });
 
       const data = res.data;
-      if (data?.token) localStorage.setItem("token", data.token);
+      if (data?.studentToken) localStorage.setItem("studentToken", data.studentToken);
       window.location.href = "/dashboard";
     } catch (err) {
       const message =

@@ -17,7 +17,6 @@ export const CourseProvider = ({ children }) => {
     if (response.status === 200) {
       setCourse(response.data.course);
       setModules(response.data.modules || []);
-      setCategory(response.data.course.category);
     }
   };
 

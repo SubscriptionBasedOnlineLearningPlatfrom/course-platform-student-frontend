@@ -40,12 +40,11 @@ export const AuthPage = () => {
     try {
       const endpoint = mode === "login" ? "/auth/login" : "/auth/register";
       const payload = mode === "login" ? { email, password } : { username, email, password };
-        console.log(`${BackendAPI}${endpoint}`)
       const res = await axios.post(`${BackendAPI}${endpoint}`, payload, {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-
+      console.log(res)
       const data = res.data;
       if (data?.studentToken) localStorage.setItem("studentToken", data.studentToken);
       window.location.href = "/dashboard";

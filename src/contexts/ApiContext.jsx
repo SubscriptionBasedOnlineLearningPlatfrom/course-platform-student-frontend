@@ -55,6 +55,7 @@ const ApiContext = createContext({});
 
 export const ApiProvider = ({ children }) => {
   const BackendAPI = "http://localhost:4000/student";
+  const frontendAPI = "http://localhost:5173"
 
   return (
     <ApiContext.Provider

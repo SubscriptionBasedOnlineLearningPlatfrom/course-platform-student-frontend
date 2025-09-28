@@ -12,6 +12,8 @@ export const CourseProvider = ({ children }) => {
   const [streakData, setStreakData] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
 
+  const studentToken = localStorage.getItem("studentToken");
+
   const fetchCourseDetails = async (BackendAPI, courseId) => {
     const response = await axios.get(`${BackendAPI}/courses/${courseId}`);
     if (response.status === 200) {
@@ -36,7 +38,12 @@ export const CourseProvider = ({ children }) => {
 
   const fetchDashboardData = async (BackendAPI) => {
     try {
-      const response = await axios.get(`${BackendAPI}/dashboard`);
+      const response = await axios.get(`${BackendAPI}/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+      console.log(response);
       if (response.status === 200) {
         setDashboardData(response.data.dashboard);
         setStreakData(response.data.streak);
@@ -48,18 +55,26 @@ export const CourseProvider = ({ children }) => {
 
   const fetchEnrolledCourses = async (BackendAPI) => {
     try {
-      const response = await axios.get(`${BackendAPI}/dashboard/enrolled-courses`);
+      const response = await axios.get(
+        `${BackendAPI}/dashboard/enrolled-courses`,
+        {
+          headers: {
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      console.log(response);
       if (response.status === 200) {
         setEnrolledCourses(Object.values(response.data.courses));
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error fetching enrolled courses:", error);
     }
-  }
+  };
 
-  const completedCourses = enrolledCourses.filter(c => Number(c.progress) === 100);
-
+  const completedCourses = enrolledCourses.filter(
+    (c) => Number(c.progress) === 100
+  );
 
   return (
     <CourseContext.Provider
@@ -82,7 +97,7 @@ export const CourseProvider = ({ children }) => {
         fetchRelatedCourses,
         fetchDashboardData,
         fetchEnrolledCourses,
-        completedCourses
+        completedCourses,
       }}
     >
       {children}

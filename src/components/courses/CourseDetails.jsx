@@ -199,7 +199,7 @@ const CourseDetails = () => {
               </p>
               <button
                 onClick={() => {
-                  setEnrolled(true), navigate("/subscription");
+                  setEnrolled(true), navigate(`/subscription/${course.course_id}`);
                 }}
                 className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
                   enrolled ? "opacity-50 cursor-not-allowed" : ""

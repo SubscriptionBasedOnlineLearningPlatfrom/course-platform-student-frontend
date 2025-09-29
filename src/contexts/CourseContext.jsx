@@ -92,6 +92,21 @@ export const CourseProvider = ({ children }) => {
     return isActive;
   }
 
+  const checkEnrollment = async (BackendAPI, courseId) => {
+    const studentToken = localStorage.getItem('studentToken');
+    let isEnrollment = false;
+    const response = await axios.get(`${BackendAPI}/courses/check-enrollment/${courseId}`,{
+      headers: {
+        Authorization : `Bearer ${studentToken}`
+      }
+    })
+
+    isEnrollment = response.data.isEnrolled;
+
+    return isEnrollment;
+
+  }
+
   return (
     <CourseContext.Provider
       value={{
@@ -114,7 +129,8 @@ export const CourseProvider = ({ children }) => {
         fetchDashboardData,
         fetchEnrolledCourses,
         completedCourses,
-        checkPaymentActive
+        checkPaymentActive,
+        checkEnrollment
       }}
     >
       {children}

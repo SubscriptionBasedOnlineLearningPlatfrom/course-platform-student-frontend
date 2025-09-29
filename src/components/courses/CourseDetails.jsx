@@ -10,7 +10,8 @@ import { FaStar } from "react-icons/fa6";
 
 const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
-  let [isActive, setIsActive] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [isEnrollment, setIsEnrollment] = useState(false);
   const { enrolled, setEnrolled } = useContext(CourseContext);
   const navigate = useNavigate();
   const { courseId } = useParams();
@@ -23,6 +24,7 @@ const CourseDetails = () => {
     fetchCourseDetails,
     fetchRelatedCourses,
     checkPaymentActive,
+    checkEnrollment,
   } = useContext(CourseContext);
 
   // fetch the course when id changes
@@ -46,17 +48,17 @@ const CourseDetails = () => {
   }, []);
 
   useEffect(() => {
-    const fetchPayment = async () => {
+    const fetchPayment = () => {
       try {
-        isActive = await checkPaymentActive(BackendAPI);
-        setIsActive(Boolean(isActive));
+        setIsActive(checkPaymentActive(BackendAPI));
+        setIsEnrollment(checkEnrollment(BackendAPI, courseId));
       } catch (err) {
         console.error("Error checking payment:", err);
       }
     };
 
     fetchPayment();
-  }, [isActive]);
+  }, []);
 
   // Function to format dates
   const formatDate = (dateString) => {
@@ -205,29 +207,46 @@ const CourseDetails = () => {
             </div>
 
             {/* Enrollment Card */}
-            <div className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] rounded-2xl shadow-lg p-6 text-white">
-              <h3 className="font-bold text-xl mb-2">
-                Ready to start learning?
-              </h3>
-              <p className="text-blue-100 mb-4">
-                Join thousands of students already enrolled in this course.
-              </p>
-              <button
-                onClick={() => {
-                  setEnrolled(true);
-                  if (isActive) {
-                    navigate(`/courses/${course.course_id}/content`);
-                  } else {
-                    navigate(`/subscription/${course.course_id}`);
+            {isEnrollment ? (
+              <div className="bg-gradient-to-r from-green-400 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+                <h3 className="font-bold text-xl mb-2">You're enrolled!</h3>
+                <p className="text-green-100 mb-4">
+                  Congratulations! You are already part of this course. 🎉
+                </p>
+                <button
+                  onClick={() =>
+                    navigate(`/courses/${course.course_id}/content`)
                   }
-                }}
-                className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
-                  enrolled ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                Enroll Now
-              </button>
-            </div>
+                  className="w-full bg-white text-green-600 font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                >
+                  Go to Course
+                </button>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] rounded-2xl shadow-lg p-6 text-white">
+                <h3 className="font-bold text-xl mb-2">
+                  Ready to start learning?
+                </h3>
+                <p className="text-blue-100 mb-4">
+                  Join thousands of students already enrolled in this course.
+                </p>
+                <button
+                  onClick={() => {
+                    setEnrolled(true);
+                    if (isActive) {
+                      navigate(`/courses/${course.course_id}/content`);
+                    } else {
+                      navigate(`/subscription/${course.course_id}`);
+                    }
+                  }}
+                  className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
+                    enrolled ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Enroll Now
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

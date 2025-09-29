@@ -76,6 +76,22 @@ export const CourseProvider = ({ children }) => {
     (c) => Number(c.progress) === 100
   );
 
+  const checkPaymentActive = async (BackendAPI) => {
+    const studentToken = localStorage.getItem('studentToken');
+    const response = await axios.get(`${BackendAPI}/subscription/check`,{
+      headers: {
+        Authorization : `Bearer ${studentToken}`
+      }
+    })
+
+    let isActive = false;
+
+    if(response.status === 200){
+      isActive =response.data.is_active;
+    }
+    return isActive;
+  }
+
   return (
     <CourseContext.Provider
       value={{
@@ -98,6 +114,7 @@ export const CourseProvider = ({ children }) => {
         fetchDashboardData,
         fetchEnrolledCourses,
         completedCourses,
+        checkPaymentActive
       }}
     >
       {children}

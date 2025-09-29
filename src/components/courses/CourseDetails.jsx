@@ -10,9 +10,10 @@ import { FaStar } from "react-icons/fa6";
 
 const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
+  let [isActive, setIsActive] = useState(false);
   const { enrolled, setEnrolled } = useContext(CourseContext);
   const navigate = useNavigate();
-  const {courseId} = useParams();
+  const { courseId } = useParams();
   const { BackendAPI } = useApi();
   const {
     course,
@@ -21,6 +22,7 @@ const CourseDetails = () => {
     setModules,
     fetchCourseDetails,
     fetchRelatedCourses,
+    checkPaymentActive,
   } = useContext(CourseContext);
 
   // fetch the course when id changes
@@ -30,7 +32,7 @@ const CourseDetails = () => {
 
   // fetch related courses when category changes
   useEffect(() => {
-    if (!course?.category) return; 
+    if (!course?.category) return;
     fetchRelatedCourses(BackendAPI, course.category);
   }, [BackendAPI, course?.category]);
 
@@ -42,7 +44,19 @@ const CourseDetails = () => {
       setLoading(false);
     }, 1000);
   }, []);
-  // Note: Removed fetchCourseDetails from dependency array since we're not using it
+
+  useEffect(() => {
+    const fetchPayment = async () => {
+      try {
+        isActive = await checkPaymentActive(BackendAPI);
+        setIsActive(Boolean(isActive));
+      } catch (err) {
+        console.error("Error checking payment:", err);
+      }
+    };
+
+    fetchPayment();
+  }, [isActive]);
 
   // Function to format dates
   const formatDate = (dateString) => {
@@ -142,7 +156,8 @@ const CourseDetails = () => {
                         />
                       ) : (
                         <div>
-                          {course.instructor_name?.charAt(0).toUpperCase() || 'I'}
+                          {course.instructor_name?.charAt(0).toUpperCase() ||
+                            "I"}
                         </div>
                       )}
                     </div>
@@ -199,7 +214,12 @@ const CourseDetails = () => {
               </p>
               <button
                 onClick={() => {
-                  setEnrolled(true), navigate(`/subscription/${course.course_id}`);
+                  setEnrolled(true);
+                  if (isActive) {
+                    navigate(`/courses/${course.course_id}/content`);
+                  } else {
+                    navigate(`/subscription/${course.course_id}`);
+                  }
                 }}
                 className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
                   enrolled ? "opacity-50 cursor-not-allowed" : ""

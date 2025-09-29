@@ -48,17 +48,21 @@ const CourseDetails = () => {
   }, []);
 
   useEffect(() => {
-    const fetchPayment = () => {
+    const fetchPaymentAndEnrollment = async () => {
       try {
-        setIsActive(checkPaymentActive(BackendAPI));
-        setIsEnrollment(checkEnrollment(BackendAPI, courseId));
+        const paymentActive = await checkPaymentActive(BackendAPI);
+        const enrolledStatus = await checkEnrollment(BackendAPI, courseId); 
+
+        setIsActive(Boolean(paymentActive));
+        setIsEnrollment(Boolean(enrolledStatus));
+        
       } catch (err) {
-        console.error("Error checking payment:", err);
+        console.error("Error checking payment or enrollment:", err);
       }
     };
 
-    fetchPayment();
-  }, []);
+    fetchPaymentAndEnrollment();
+  }, [BackendAPI, courseId]);
 
   // Function to format dates
   const formatDate = (dateString) => {

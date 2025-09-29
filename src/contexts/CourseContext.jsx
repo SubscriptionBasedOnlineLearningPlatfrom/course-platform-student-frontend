@@ -102,7 +102,6 @@ export const CourseProvider = ({ children }) => {
     })
 
     isEnrollment = response.data.isEnrolled;
-
     return isEnrollment;
 
   }

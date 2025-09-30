@@ -11,12 +11,12 @@ import DisplayCourse from "./pages/DisplayCourse";
 import DashBoard from "./pages/DashBoard";
 import CourseProgress from "./components/DashBoard/CourseProgress";
 import CertificatePage from "./pages/Certificate";
-import { QuizComponent } from "./components/quizes/Quiz";
 import CourseContentPage from "./components/dashBoard/CourseContentPage";
 import Courses from "./pages/Courses";
 import Subscription from "./pages/Subscription";
 import { AuthPage } from "./pages/AuthPage";
 import BillingSuccess from "./pages/BillingSuccess";
+import QuizCreation from "./components/quizes/QuizCreation";
 
 // Layouts
 const MainLayout = () => (
@@ -46,7 +46,7 @@ function App() {
         <Route path="/certificate/:courseId" element={<CertificatePage />} />
         <Route path="/displayCourses/:courseId" element={<DisplayCourse />} />
         <Route path="/courses/:courseId/content" element={<CourseContentPage />} />
-        <Route path="/QuizComponent" element={<QuizComponent />} />
+        <Route path="/QuizComponent" element={<QuizCreation />} />
         <Route path="/subscription/:courseId" element={<Subscription />} />
         <Route path="/billing/success" element={<BillingSuccess />} />
       </Route>

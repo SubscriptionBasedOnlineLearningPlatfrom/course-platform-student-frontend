@@ -46,7 +46,7 @@ export const AuthPage = () => {
       });
       const data = res.data;
       if (data?.studentToken) localStorage.setItem("studentToken", data.studentToken);
-      window.location.href = "/dashboard";
+      window.location.href = "/";
     } catch (err) {
       const message =
         err?.response?.data?.error ||

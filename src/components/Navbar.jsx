@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import logo from "@/assets/logo.jpeg"; // Adjust the path to your logo image
 import { FaBars, FaTimes } from "react-icons/fa";
@@ -8,13 +8,17 @@ import { FaUserEdit } from "react-icons/fa";
 import { MdPayment } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
 import { HiOutlineLogout } from "react-icons/hi";
+import { Button } from "@headlessui/react";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isToken, setIsToken] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [subscriptionPlan, setSubscriptionPlan] = useState(null);
+  const [isSubscriptionPlanOpen, setIsSubscriptionPlanOpen] = useState(false);
   const { BackendAPI } = useApi();
+  const navigate = useNavigate();
   const profileRef = useRef(null);
 
   useEffect(() => {
@@ -56,6 +60,42 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleViewSubscription = async () => {
+    try {
+      const studentToken = localStorage.getItem("studentToken");
+      const response = await axios.get(`${BackendAPI}/subscription/check`, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+
+      if (response.status === 200) {
+        setSubscriptionPlan(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleActiveCurrentPlan = async (payment_id) => {
+    try {
+      const studentToken = localStorage.getItem("studentToken");
+      const response = await axios.post(
+        `${BackendAPI}/subscription/active-plan/${payment_id}`,
+        { plan: subscriptionPlan?.payment?.plan },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      window.location.href = response.data.session_url;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <nav className="bg-white border-b shadow-md">
@@ -184,7 +224,10 @@ const Navbar = () => {
 
       {/* Profile Sidebar */}
       {isProfileOpen && (
-        <div ref={profileRef} className="absolute right-0 top-25 w-72 bg-white shadow-xl border rounded-lg p-5 z-50">
+        <div
+          ref={profileRef}
+          className="absolute right-0 top-25 w-72 bg-white shadow-xl border rounded-lg p-5 z-50"
+        >
           {/* Profile Info */}
           <div className="flex flex-col items-center mb-6">
             {user?.avatar ? (
@@ -204,32 +247,75 @@ const Navbar = () => {
 
           {/* Menu Options */}
           <ul className="space-y-4 text-gray-700">
-            <li>
-              <Link
-                to="/profile/edit"
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-50 hover:text-blue-600 transition duration-200"
+            <li className="relative">
+              {/* Button to toggle subscription plan */}
+              <button
+                onClick={() => {
+                  handleViewSubscription();
+                  setIsSubscriptionPlanOpen(!isSubscriptionPlanOpen);
+                }}
+                className="flex items-center justify-between w-full px-4 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition duration-200 font-medium"
               >
-                <FaUserEdit className="w-5 h-5" />
-                Edit Profile
-              </Link>
+                <div className="flex items-center gap-2">
+                  <MdPayment className="w-5 h-5" />
+                  <span>View Subscription Plan</span>
+                </div>
+                <span className="text-gray-500">
+                  {isSubscriptionPlanOpen ? "▲" : "▼"}
+                </span>
+              </button>
+
+              {/* Subscription plan details */}
+              {isSubscriptionPlanOpen && (
+                <div className="mt-2 bg-white border border-gray-200 shadow-sm rounded-md p-4 text-gray-700 space-y-2 animate-slideDown">
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Active:</span>
+                    <span>{subscriptionPlan?.is_active ? "Yes" : "No"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Expiry Date:</span>
+                    <span>
+                      {subscriptionPlan?.expiry_at
+                        ? new Date(
+                            subscriptionPlan.expiry_at
+                          ).toLocaleDateString("en-CA")
+                        : "Not Available"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Plan:</span>
+                    <span>
+                      {subscriptionPlan?.payment?.plan || "Not Subscribed"}
+                    </span>
+                  </div>
+                  <div className="mt-4 flex justify-center">
+                    {subscriptionPlan?.is_active && (
+                      <button
+                        onClick={() => handleActiveCurrentPlan(subscriptionPlan?.payment?.payment_id)}
+                        className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition duration-200"
+                      >
+                        Activate Current Plan
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </li>
             <li>
-              <Link
-                to="/subscription/view"
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-50 hover:text-blue-600 transition duration-200"
+              <button
+                onClick={() => {
+                  setIsSubscriptionPlanOpen(false);
+                  navigate("/subscription/change"); 
+                }}
+                className="mt-3 w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow hover:from-blue-600 hover:to-indigo-700 transition duration-200"
               >
-                <MdPayment className="w-5 h-5" />
-                View Subscription Plan
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/subscription/change"
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-blue-50 hover:text-blue-600 transition duration-200"
-              >
-                <FaExchangeAlt className="w-5 h-5" />
-                Change Subscription Plan
-              </Link>
+                Change Plan
+              </button>
+
+              <p className="mt-2 text-xs text-gray-500 italic">
+                ⚠️ You can change your subscription plan. The new plan will take
+                effect after the current plan expires.
+              </p>
             </li>
             <li>
               <button

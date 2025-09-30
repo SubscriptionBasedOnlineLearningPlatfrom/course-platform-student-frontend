@@ -106,6 +106,7 @@ export const CourseProvider = ({ children }) => {
 
   }
 
+
   return (
     <CourseContext.Provider
       value={{

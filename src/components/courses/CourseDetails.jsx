@@ -7,13 +7,15 @@ import { CourseContext } from "../../contexts/CourseContext";
 import { useApi } from "../../contexts/ApiContext";
 
 import { FaStar } from "react-icons/fa6";
+import { toast } from "react-toastify";
 
 const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
+  const [isActive, setIsActive] = useState(false);
+  const [isEnrollment, setIsEnrollment] = useState(false);
   const { enrolled, setEnrolled } = useContext(CourseContext);
-
   const navigate = useNavigate();
-  const courseId = "637468ac-0476-4db8-bc1a-e03b1d822a46"; //useParams();
+  const { courseId } = useParams();
   const { BackendAPI } = useApi();
   const {
     course,
@@ -22,6 +24,8 @@ const CourseDetails = () => {
     setModules,
     fetchCourseDetails,
     fetchRelatedCourses,
+    checkPaymentActive,
+    checkEnrollment,
   } = useContext(CourseContext);
 
   // fetch the course when id changes
@@ -31,7 +35,7 @@ const CourseDetails = () => {
 
   // fetch related courses when category changes
   useEffect(() => {
-    if (!course?.category) return; 
+    if (!course?.category) return;
     fetchRelatedCourses(BackendAPI, course.category);
   }, [BackendAPI, course?.category]);
 
@@ -43,7 +47,46 @@ const CourseDetails = () => {
       setLoading(false);
     }, 1000);
   }, []);
-  // Note: Removed fetchCourseDetails from dependency array since we're not using it
+
+  useEffect(() => {
+    const fetchPaymentAndEnrollment = async () => {
+      try {
+        const paymentActive = await checkPaymentActive(BackendAPI);
+        const enrolledStatus = await checkEnrollment(BackendAPI, courseId);
+
+        setIsActive(Boolean(paymentActive));
+        setIsEnrollment(Boolean(enrolledStatus));
+      } catch (err) {
+        console.error("Error checking payment or enrollment:", err);
+      }
+    };
+
+    fetchPaymentAndEnrollment();
+  }, [BackendAPI, courseId]);
+
+  const handleEnrollment = async (courseId) => {
+    try {
+      const studentToken = localStorage.getItem("studentToken");
+      
+      const response = await axios.post(
+        `${BackendAPI}/courses/enrollment`,
+        {course_id:courseId},
+        {
+          headers: {
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      console.log(response)
+      if (response.status === 200) {
+        navigate(`/courses/${courseId}/content`);
+        toast.success("enrollment successfully!");
+      }
+    } catch (error) {
+      toast.error(error);
+      console.log(error);
+    }
+  };
 
   // Function to format dates
   const formatDate = (dateString) => {
@@ -143,7 +186,8 @@ const CourseDetails = () => {
                         />
                       ) : (
                         <div>
-                          {course.instructor_name?.charAt(0).toUpperCase() || 'I'}
+                          {course.instructor_name?.charAt(0).toUpperCase() ||
+                            "I"}
                         </div>
                       )}
                     </div>
@@ -191,24 +235,46 @@ const CourseDetails = () => {
             </div>
 
             {/* Enrollment Card */}
-            <div className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] rounded-2xl shadow-lg p-6 text-white">
-              <h3 className="font-bold text-xl mb-2">
-                Ready to start learning?
-              </h3>
-              <p className="text-blue-100 mb-4">
-                Join thousands of students already enrolled in this course.
-              </p>
-              <button
-                onClick={() => {
-                  setEnrolled(true), navigate("/subscription");
-                }}
-                className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
-                  enrolled ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                Enroll Now
-              </button>
-            </div>
+            {isEnrollment ? (
+              <div className="bg-gradient-to-r from-green-400 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+                <h3 className="font-bold text-xl mb-2">You're enrolled!</h3>
+                <p className="text-green-100 mb-4">
+                  Congratulations! You are already part of this course. 🎉
+                </p>
+                <button
+                  onClick={() =>
+                    navigate(`/courses/${course.course_id}/content`)
+                  }
+                  className="w-full bg-white text-green-600 font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer"
+                >
+                  Go to Course
+                </button>
+              </div>
+            ) : (
+              <div className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] rounded-2xl shadow-lg p-6 text-white">
+                <h3 className="font-bold text-xl mb-2">
+                  Ready to start learning?
+                </h3>
+                <p className="text-blue-100 mb-4">
+                  Join thousands of students already enrolled in this course.
+                </p>
+                <button
+                  onClick={() => {
+                    setEnrolled(true);
+                    if (isActive) {
+                      handleEnrollment(course.course_id);
+                    } else {
+                      navigate(`/subscription/${course.course_id}`);
+                    }
+                  }}
+                  className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${
+                    enrolled ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                >
+                  Enroll Now
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

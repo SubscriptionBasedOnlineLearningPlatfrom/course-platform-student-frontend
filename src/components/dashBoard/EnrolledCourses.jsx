@@ -13,8 +13,6 @@ const EnrolledCourses = () => {
   const [selectedCategory, setSelectedCategory] = useState("all"); // For completed
   const {enrolledCourses,completedCourses} = useContext(CourseContext);
   
-
-
   // Apply filters and sorting
   useEffect(() => {
     let filtered = [];
@@ -230,11 +228,6 @@ const EnrolledCourses = () => {
               key={course.course_id}
               course={course}
               type={activeTab}
-              onContinue={(course_id) => console.log(`Continue ${course_id}`)}
-              onDownloadCertificate={(course_id) =>
-                console.log(`Download certificate for ${course_id}`)
-              }
-              onReviewCourse={(id) => console.log(`Review course ${id}`)}
             />
           ))}
         </div>

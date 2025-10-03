@@ -55,9 +55,6 @@ const RelatedCourses = () => {
       <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-2 mr-3">
-              🎯
-            </span>
             Related Courses
           </h2>
           <button className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">

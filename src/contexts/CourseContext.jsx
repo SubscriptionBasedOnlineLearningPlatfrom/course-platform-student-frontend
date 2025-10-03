@@ -12,12 +12,13 @@ export const CourseProvider = ({ children }) => {
   const [streakData, setStreakData] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
 
+  const studentToken = localStorage.getItem("studentToken");
+
   const fetchCourseDetails = async (BackendAPI, courseId) => {
     const response = await axios.get(`${BackendAPI}/courses/${courseId}`);
     if (response.status === 200) {
       setCourse(response.data.course);
       setModules(response.data.modules || []);
-      setCategory(response.data.course.category);
     }
   };
 
@@ -27,11 +28,9 @@ export const CourseProvider = ({ children }) => {
       const response = await axios.get(
         `${BackendAPI}/courses/related-courses/${category}`
       );
-      console.log(response);
       if (response.status === 200) {
         setRelatedCourses(response.data.courses);
       }
-      console.log("Related courses fetched:", response.data.courses);
     } catch (error) {
       console.error("Error fetching related courses:", error);
     }
@@ -39,7 +38,12 @@ export const CourseProvider = ({ children }) => {
 
   const fetchDashboardData = async (BackendAPI) => {
     try {
-      const response = await axios.get(`${BackendAPI}/dashboard`);
+      const response = await axios.get(`${BackendAPI}/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+      console.log(response);
       if (response.status === 200) {
         setDashboardData(response.data.dashboard);
         setStreakData(response.data.streak);
@@ -51,18 +55,56 @@ export const CourseProvider = ({ children }) => {
 
   const fetchEnrolledCourses = async (BackendAPI) => {
     try {
-      const response = await axios.get(`${BackendAPI}/dashboard/enrolled-courses`);
+      const response = await axios.get(
+        `${BackendAPI}/dashboard/enrolled-courses`,
+        {
+          headers: {
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      console.log(response);
       if (response.status === 200) {
         setEnrolledCourses(Object.values(response.data.courses));
       }
-      console.log(response);
-    }
-    catch (error) {
+    } catch (error) {
       console.error("Error fetching enrolled courses:", error);
     }
+  };
+
+  const completedCourses = enrolledCourses.filter(
+    (c) => Number(c.progress) === 100
+  );
+
+  const checkPaymentActive = async (BackendAPI) => {
+    const studentToken = localStorage.getItem('studentToken');
+    const response = await axios.get(`${BackendAPI}/subscription/check`,{
+      headers: {
+        Authorization : `Bearer ${studentToken}`
+      }
+    })
+
+    let isActive = false;
+
+    if(response.status === 200){
+      isActive =response.data.is_active;
+    }
+    return isActive;
   }
 
-  const completedCourses = enrolledCourses.filter(c => Number(c.progress) === 100);
+  const checkEnrollment = async (BackendAPI, courseId) => {
+    const studentToken = localStorage.getItem('studentToken');
+    let isEnrollment = false;
+    const response = await axios.get(`${BackendAPI}/courses/check-enrollment/${courseId}`,{
+      headers: {
+        Authorization : `Bearer ${studentToken}`
+      }
+    })
+
+    isEnrollment = response.data.isEnrolled;
+    return isEnrollment;
+
+  }
 
 
   return (
@@ -86,7 +128,9 @@ export const CourseProvider = ({ children }) => {
         fetchRelatedCourses,
         fetchDashboardData,
         fetchEnrolledCourses,
-        completedCourses
+        completedCourses,
+        checkPaymentActive,
+        checkEnrollment
       }}
     >
       {children}

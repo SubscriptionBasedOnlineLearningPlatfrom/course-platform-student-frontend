@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useApi } from "../../contexts/ApiContext";
+import { toast } from "react-toastify";
 
 const Comments = () => {
-  const {courseId} = useParams();
+  const { courseId } = useParams();
   const { BackendAPI } = useApi();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,6 @@ const Comments = () => {
   const [showReplyForm, setShowReplyForm] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
-  
 
   // Fetch comments when component mounts or courseId changes
   useEffect(() => {
@@ -27,6 +27,8 @@ const Comments = () => {
         const response = await axios.get(
           `${BackendAPI}/courses/comments-with-replies/${courseId}`
         );
+
+        console.log(response);
         if (response.status === 200) {
           setComments(response.data.comments || []);
           setLoading(false);
@@ -34,7 +36,7 @@ const Comments = () => {
       };
       fetchComments();
     } catch (error) {
-      console.log(error)
+      console.log(error);
       console.error("Error fetching comments:", error);
     }
   }, [courseId, BackendAPI]);
@@ -57,7 +59,6 @@ const Comments = () => {
     1: comments.filter((c) => c.rating === 1).length,
   };
 
-  // Handle new comment submission
   const handleSubmitComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || rating === 0) return;
@@ -73,16 +74,21 @@ const Comments = () => {
           },
         }
       );
-      console.log(response)
+      console.log(response);
       setComments((prev) => [...prev, response.data]);
 
       setNewComment("");
       setRating(0);
       setIsSubmitting(false);
+
+      toast.success("Comment submitted successfully");
     } catch (error) {
       const server =
-        error.response?.data?.details || error.response?.data?.error || error.message;
+        error.response?.data?.details ||
+        error.response?.data?.error ||
+        error.message;
       setErrorMsg(server || "Something went wrong. Please try again.");
+      toast.error(server || "Failed to submit comment");
     }
   };
 
@@ -113,10 +119,15 @@ const Comments = () => {
 
       setReplyText("");
       setShowReplyForm(null);
+
+      toast.success("Reply submitted successfully");
     } catch (error) {
       const server =
-        error.response?.data?.details || error.response?.data?.error || error.message;
+        error.response?.data?.details ||
+        error.response?.data?.error ||
+        error.message;
       setErrorMsg(server || "Something went wrong. Please try again.");
+      toast.error(server || "Failed to submit reply");
     }
   };
 
@@ -318,8 +329,16 @@ const Comments = () => {
                 className="border-b border-gray-200 pb-6 last:border-b-0"
               >
                 <div className="flex items-start space-x-4">
-                  <span className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                    {comment.student_name?.charAt(0).toUpperCase() || "U"}
+                  <span className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-600 text-white font-bold text-lg flex-shrink-0 overflow-hidden">
+                    {comment.user_profile ? (
+                      <img
+                        src={comment.user_profile}
+                        alt={comment.student_name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      comment.student_name?.charAt(0).toUpperCase() || "U"
+                    )}
                   </span>
 
                   <div className="flex-1">
@@ -406,18 +425,26 @@ const Comments = () => {
                             className="bg-gray-50 rounded-lg p-4 ml-4"
                           >
                             <div className="flex items-start space-x-3">
-                              {/* <img
-                              src={reply.user_avatar}
-                              alt={reply.user_name}
-                              className="w-8 h-8 rounded-full object-cover"
-                            /> */}
-                              <span className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                {reply.student_name?.charAt(0).toUpperCase() ||
+                              <span className="w-8 h-8 rounded-full flex items-center justify-center bg-green-600 text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                                {reply.user_profile ? (
+                                  <img
+                                    src={reply.user_profile}
+                                    alt={
+                                      reply.student_name ||
+                                      reply.instructor_name ||
+                                      "User"
+                                    }
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  reply.student_name?.charAt(0).toUpperCase() ||
                                   reply.instructor_name
                                     ?.charAt(0)
                                     .toUpperCase() ||
-                                  "U"}
+                                  "U"
+                                )}
                               </span>
+
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-2">
                                   <h5 className="font-medium text-gray-900 text-sm">

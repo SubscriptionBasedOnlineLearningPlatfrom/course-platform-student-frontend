@@ -44,7 +44,9 @@ export const AuthPage = () => {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
+      console.log(res);
       const data = res.data;
+      console.log(data)
       if (data?.studentToken) localStorage.setItem("studentToken", data.studentToken);
       window.location.href = "/";
     } catch (err) {

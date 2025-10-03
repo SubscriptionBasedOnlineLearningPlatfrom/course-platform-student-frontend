@@ -11,6 +11,7 @@ import { HiOutlineLogout } from "react-icons/hi";
 import { Button } from "@headlessui/react";
 import { FiAlertTriangle } from "react-icons/fi";
 import { BsPencilSquare } from 'react-icons/bs';
+import { toast } from "react-toastify";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -95,8 +96,12 @@ const Navbar = () => {
           },
         }
       );
+      if (response.status === 200) {
+      toast.success("Subscription activated successfully");
       window.location.href = response.data.session_url;
+    }
     } catch (error) {
+      toast.error("Failed to activate subscription ");
       console.error(error);
     }
   };
@@ -107,7 +112,7 @@ const Navbar = () => {
 
   const handleUpload = async () => {
     if (!file) {
-      return alert("Select a flie first!");
+      toast.warn("Please select a file first ⚠️");
     }
     const formData = new FormData();
     formData.append("file", file);
@@ -126,9 +131,11 @@ const Navbar = () => {
       );
 
       if (response.status === 200) {
-        setUrl(response.data.profile.image_url);
-      }
+      setUrl(response.data.profile.image_url);
+      toast.success("Profile picture uploaded successfully");
+    }
     } catch (error) {
+      toast.error("Upload failed! Please try again.");
       console.error(error);
     }
   };
@@ -187,7 +194,7 @@ const Navbar = () => {
                     <img
                       src={user.user_profile}
                       alt={user.username}
-                      className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
+                      className="w-10 h-10 rounded-full border-2 border-[#0173d1] object-cover"
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold border-2 border-gray-300">
@@ -248,7 +255,7 @@ const Navbar = () => {
                     className="w-10 h-10 rounded-full border-2 border-gray-300 object-cover"
                   />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold border-2 border-gray-300">
+                  <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold border-2 border-[#0173d1]">
                     {user?.username?.[0].toUpperCase()}
                   </div>
                 )}
@@ -272,10 +279,10 @@ const Navbar = () => {
                 <img
                   src={user.user_profile}
                   alt={user.username}
-                  className="w-full h-full rounded-full border-4 border-indigo-500 object-cover shadow-sm"
+                  className="w-full h-full rounded-full border-4 bg-[#0173d1] border-[#0173d1] object-cover shadow-sm"
                 />
               ) : (
-                <div className="w-full h-full rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-3xl border-4 border-indigo-500 shadow-sm">
+                <div className="w-full h-full rounded-full bg-[#0173d1] text-white flex items-center justify-center font-bold text-3xl border-4 border-[#0173d1] shadow-sm">
                   {user?.username?.[0]?.toUpperCase()}
                 </div>
               )}
@@ -283,7 +290,7 @@ const Navbar = () => {
               {/* Overlay edit button */}
               <label
                 htmlFor="fileInput"
-                className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white p-1 rounded-full cursor-pointer shadow-lg transition"
+                className="absolute bottom-0 right-0 bg-[#0173d1] text-white p-1 rounded-full cursor-pointer shadow-lg transition"
               >
                 <BsPencilSquare />
               </label>
@@ -297,7 +304,7 @@ const Navbar = () => {
 
             <button
               onClick={handleUpload}
-              className="w-full py-2 px-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold rounded-lg shadow-md transition mb-2"
+              className="w-full py-2 px-4 bg-gradient-to-r from-[#0173d1] to-[#85c1f3] text-white font-semibold rounded-lg shadow-md transition mb-2"
             >
               Upload
             </button>
@@ -356,7 +363,7 @@ const Navbar = () => {
                             subscriptionPlan?.payment?.payment_id
                           )
                         }
-                        className="px-6 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+                        className="px-6 py-2 bg-gradient-to-r from-[#0173d1] to-[#85c1f3] text-white font-semibold rounded-lg shadow-md hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
                       >
                         Activate Current Plan
                       </button>
@@ -373,7 +380,7 @@ const Navbar = () => {
                   setIsSubscriptionPlanOpen(false);
                   navigate("/subscription/change");
                 }}
-                className="w-full px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow hover:from-blue-600 hover:to-indigo-700 transition"
+                className="w-full px-4 py-2 bg-gradient-to-r from-[#0173d1] to-[#85c1f3] text-white rounded-lg shadow hover:from-blue-600 hover:to-indigo-700 transition"
               >
                 Change Plan
               </button>

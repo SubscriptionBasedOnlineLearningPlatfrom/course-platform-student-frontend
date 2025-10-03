@@ -7,6 +7,7 @@ import { CourseContext } from "../../contexts/CourseContext";
 import { useApi } from "../../contexts/ApiContext";
 
 import { FaStar } from "react-icons/fa6";
+import { toast } from "react-toastify";
 
 const CourseDetails = () => {
   const [loading, setLoading] = useState(true);
@@ -51,11 +52,10 @@ const CourseDetails = () => {
     const fetchPaymentAndEnrollment = async () => {
       try {
         const paymentActive = await checkPaymentActive(BackendAPI);
-        const enrolledStatus = await checkEnrollment(BackendAPI, courseId); 
+        const enrolledStatus = await checkEnrollment(BackendAPI, courseId);
 
         setIsActive(Boolean(paymentActive));
         setIsEnrollment(Boolean(enrolledStatus));
-        
       } catch (err) {
         console.error("Error checking payment or enrollment:", err);
       }
@@ -63,6 +63,30 @@ const CourseDetails = () => {
 
     fetchPaymentAndEnrollment();
   }, [BackendAPI, courseId]);
+
+  const handleEnrollment = async (courseId) => {
+    try {
+      const studentToken = localStorage.getItem("studentToken");
+      
+      const response = await axios.post(
+        `${BackendAPI}/courses/enrollment`,
+        {course_id:courseId},
+        {
+          headers: {
+            Authorization: `Bearer ${studentToken}`,
+          },
+        }
+      );
+      console.log(response)
+      if (response.status === 200) {
+        navigate(`/courses/${courseId}/content`);
+        toast.success("enrollment successfully!");
+      }
+    } catch (error) {
+      toast.error(error);
+      console.log(error);
+    }
+  };
 
   // Function to format dates
   const formatDate = (dateString) => {
@@ -238,7 +262,7 @@ const CourseDetails = () => {
                   onClick={() => {
                     setEnrolled(true);
                     if (isActive) {
-                      navigate(`/courses/${course.course_id}/content`);
+                      handleEnrollment(course.course_id);
                     } else {
                       navigate(`/subscription/${course.course_id}`);
                     }

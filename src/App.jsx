@@ -17,6 +17,7 @@ import Subscription from "./pages/Subscription";
 import { AuthPage } from "./pages/AuthPage";
 import BillingSuccess from "./pages/BillingSuccess";
 import QuizCreation from "./components/quizes/QuizCreation";
+import { ToastContainer } from "react-toastify";
 
 // Layouts
 const MainLayout = () => (
@@ -37,24 +38,34 @@ const AuthLayout = () => (
 
 function App() {
   return (
-    <Routes>
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<DashBoard />} />
-        <Route path="/courses" element={<Courses />} />
-        <Route path="/courses/:courseId/progress" element={<CourseProgress />} />
-        <Route path="/certificate/:courseId" element={<CertificatePage />} />
-        <Route path="/displayCourses/:courseId" element={<DisplayCourse />} />
-        <Route path="/courses/:courseId/content" element={<CourseContentPage />} />
-        <Route path="/QuizComponent" element={<QuizCreation />} />
-        <Route path="/subscription/:courseId" element={<Subscription />} />
-        <Route path="/billing/success" element={<BillingSuccess />} />
-      </Route>
+    <>
+      <ToastContainer />
 
-      <Route element={<AuthLayout />}>
-        <Route path="/auth" element={<AuthPage />} />
-      </Route>
-    </Routes>
+      <Routes>
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<DashBoard />} />
+          <Route path="/courses" element={<Courses />} />
+          <Route
+            path="/courses/:courseId/progress"
+            element={<CourseProgress />}
+          />
+          <Route path="/certificate/:courseId" element={<CertificatePage />} />
+          <Route path="/displayCourses/:courseId" element={<DisplayCourse />} />
+          <Route
+            path="/courses/:courseId/content"
+            element={<CourseContentPage />}
+          />
+          <Route path="/QuizComponent" element={<QuizCreation />} />
+          <Route path="/subscription/:courseId" element={<Subscription />} />
+          <Route path="/billing/success" element={<BillingSuccess />} />
+        </Route>
+
+        <Route element={<AuthLayout />}>
+          <Route path="/auth" element={<AuthPage />} />
+        </Route>
+      </Routes>
+    </>
   );
 }
 

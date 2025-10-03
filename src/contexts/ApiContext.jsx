@@ -49,9 +49,25 @@ const getAllCourses = async () => {
 };
 
 const getCourseContent = async (courseId) => {
-  const response = await publicApi.get(`/student/course/${courseId}/content`); // after login setup make this api not public
+  const response = await api.get(`/student/course/${courseId}/content`); 
   return response.data;
 };
+
+
+// INSERT this in enroll button and check boxes!!!!!
+const startProgressTracking = async (courseId) => {
+  const response = await api.post(`/student/course/track-progress`, { courseId });
+  return response.data;
+};
+
+const updateProgress = async (moduleId, checked) => {
+  const response = await api.patch(`/student/course/update-progress`, {
+    moduleId,
+    isCompleted: checked, 
+  });
+  return response.data;
+};
+
 
 // =======================
 // CONTEXT
@@ -70,6 +86,8 @@ export const ApiProvider = ({ children }) => {
         BackendAPI,  // base URL for students
         getAllCourses,
         getCourseContent,
+        startProgressTracking,
+        updateProgress,
       }}
     >
       {children}

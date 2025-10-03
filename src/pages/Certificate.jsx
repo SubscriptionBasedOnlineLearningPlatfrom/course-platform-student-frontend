@@ -116,45 +116,63 @@
 // };
 
 // export default CertificatePage;
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { CertificateForm } from "../Components/Certificate/CertificateForm";
 import { CertificatePreview } from "../Components/Certificate/CertificatePreview";
 import { generateCertificatePDF } from "../services/pdfGenerator";
 import { GraduationCap, Award, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { CourseContext } from "../contexts/CourseContext";
+import { ApiContext } from "../contexts/ApiContext";
 
 const CertificatePage = () => {
   const { courseId } = useParams(); // Get courseId from the URL
+  const { fetchCourseDetails, course } = useContext(CourseContext);
+  const { BackendAPI } = useContext(ApiContext);
+  
   const [certificateData, setCertificateData] = useState({
     studentName: "", // Student name will be entered by the user in the form
     courseName: "",  // Course name will be fetched based on courseId
     issueDate: new Date().toISOString().split('T')[0]
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoadingCourse, setIsLoadingCourse] = useState(true);
 
-  // Effect to fetch the course name when the page loads
+  // Effect to fetch the course details when the page loads
   useEffect(() => {
-    const fetchCourseName = async () => {
+    const loadCourseDetails = async () => {
+      if (!courseId || !BackendAPI) return;
+      
       try {
-        // --- TODO: Replace this with your actual API call to get course details ---
-        // For demonstration, we'll create a course name from the ID.
-        const mockCourseName = `The Complete ${courseId.replace('-', ' ')} Course`;
-        
-        setCertificateData(prev => ({ 
-          ...prev, 
-          courseName: mockCourseName 
-        }));
+        setIsLoadingCourse(true);
+        await fetchCourseDetails(BackendAPI, courseId);
       } catch (error) {
         console.error("Failed to fetch course details:", error);
-        toast.error("Could not load course information.");
+        // If course not found or invalid ID, set a default course name
+        setCertificateData(prev => ({ 
+          ...prev, 
+          courseName: `Course ${courseId}` 
+        }));
+        toast.error("Could not load course information. Using default course name.");
+      } finally {
+        setIsLoadingCourse(false);
       }
     };
 
-    if (courseId) {
-      fetchCourseName();
+    loadCourseDetails();
+  }, [courseId, BackendAPI, fetchCourseDetails]);
+
+  // Effect to update certificate data when course is loaded
+  useEffect(() => {
+    if (course) {
+      const courseName = course.title || course.name || "Unknown Course";
+      setCertificateData(prev => ({ 
+        ...prev, 
+        courseName: courseName 
+      }));
     }
-  }, [courseId]); // This effect runs when courseId changes
+  }, [course]);
 
   // This function updates the state as the user types in the form
   const handleDataChange = (newData) => {
@@ -189,10 +207,15 @@ const CertificatePage = () => {
         <header className="text-center mb-8">
           <Award className="mx-auto h-12 w-12 text-blue-600" />
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-            Certificate 
+            Certificate Generator
           </h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
-            Confirm your details below to generate your official certificate.
+            {isLoadingCourse 
+              ? "Loading course information..." 
+              : course 
+                ? `Generate your certificate for "${course.title || course.name || 'this course'}"`
+                : "Confirm your details below to generate your official certificate."
+            }
           </p>
         </header>
 

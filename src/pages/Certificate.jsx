@@ -124,12 +124,12 @@ import { generateCertificatePDF } from "../services/pdfGenerator";
 import { GraduationCap, Award, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { CourseContext } from "../contexts/CourseContext";
-import { ApiContext } from "../contexts/ApiContext";
+import {  useApi } from "../contexts/ApiContext";
 
 const CertificatePage = () => {
   const { courseId } = useParams(); // Get courseId from the URL
   const { fetchCourseDetails, course } = useContext(CourseContext);
-  const { BackendAPI } = useContext(ApiContext);
+  const { BackendAPI } = useApi();
   
   const [certificateData, setCertificateData] = useState({
     studentName: "", // Student name will be entered by the user in the form

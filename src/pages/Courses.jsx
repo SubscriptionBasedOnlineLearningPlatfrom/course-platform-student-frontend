@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // each course routes to course/:id
-import { useApi } from "../Contexts/ApiContext.jsx";
+import { Link, useNavigate, useSearchParams } from "react-router-dom"; // each course routes to course/:id
+import { useApi } from "../contexts/ApiContext.jsx";
 import course1 from "../assets/course1.jpg";
 
 const Courses = () => {
@@ -8,8 +8,9 @@ const Courses = () => {
   const [courses, setCourses] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  const [searchQuery, setSearchQuery] = useState("");
+  
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || "");
   const [isOpen, setIsOpen] = useState(false);
   const [level, setLevel] = useState("Beginner");
 
@@ -35,8 +36,11 @@ const Courses = () => {
           id: course.course_id,
           name: course.course_title,
           description: course.course_description || "No description available",
-          image: course.thumbnail_url || course1, // use placeholder if no image
+
+          image: course.thumbnail_url || course1, // use thumbnail_url from backend, fallback to placeholder
+
           level: course.level,
+          category: course.category,
         }));
 
         setCourses(mappedCourses);
@@ -128,12 +132,15 @@ const Courses = () => {
             <Link
               to={`/displayCourses/${course.id}`}  ///course/${course.id} -- main part for testing purpose change code 
               key={course.id}
-              className="block bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col hover:shadow-xl transition duration-300"
+              className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col hover:shadow-xl transition duration-300"
             >
               <img
                 src={course.image}
                 alt={course.name}
                 className="w-full h-48 object-cover"
+                onError={(e) => {
+                  e.target.src = course1; // Fallback to placeholder if thumbnail fails to load
+                }}
               />
               <div className="p-4 flex flex-col justify-between flex-grow">
                 <div>

@@ -7,6 +7,7 @@ import { useApi } from "@/contexts/ApiContext";
 import { FaUserEdit } from "react-icons/fa";
 import { MdPayment } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
+import { BiSolidDashboard } from 'react-icons/bi';
 import { HiOutlineLogout } from "react-icons/hi";
 import { Button } from "@headlessui/react";
 import { FiAlertTriangle } from "react-icons/fi";
@@ -317,6 +318,18 @@ const Navbar = () => {
           <ul className="space-y-4 text-gray-700">
             {/* Subscription Plan */}
             <li>
+              <button
+                onClick={() => {
+                  setIsProfileOpen(false);  
+                  navigate("/dashboard");
+                }}
+                className="flex items-center justify-between w-full px-4 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition font-medium"
+              >
+                <div className="flex items-center gap-2">
+                  <BiSolidDashboard className="w-5 h-5"/>
+                  <span>Go to Dashboard</span>
+                </div>
+              </button>
               <button
                 onClick={() => {
                   handleViewSubscription();

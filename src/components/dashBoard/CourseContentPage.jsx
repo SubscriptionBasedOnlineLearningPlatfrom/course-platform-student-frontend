@@ -4,7 +4,7 @@ import { useApi } from "../../contexts/ApiContext";
 import { QuizComponent } from "../quizes/Quiz";
 
 const CourseContentPage = () => {
-  const { getCourseContent } = useApi();
+  const { getCourseContent, updateProgress } = useApi();
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -15,13 +15,17 @@ const CourseContentPage = () => {
 
   const navigate = useNavigate();
 
-  // Fetch data from backend
+  //fetch course content 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await getCourseContent(courseId); // API call
+        const res = await getCourseContent(courseId);
         if (res?.modules) {
-          // backend response into frontend-friendly format
+          const completed = {};
+          res.modules.forEach((mod) => {
+            completed[mod.module_id] = mod.is_completed;
+          });
+
           const content = {
             id: courseId,
             name: res.modules[0]?.course_title || "Course",
@@ -55,11 +59,13 @@ const CourseContentPage = () => {
                     title: "Quiz",
                     type: "quiz",
                   },
-                ].filter(Boolean), // remove nulls
+                ].filter(Boolean),
               })),
             })),
           };
-          setCourseData(content); // set content from backend to courseData
+
+          setCompletedModules(completed); // set initial checkbox states
+          setCourseData(content);
         }
       } catch (err) {
         console.error("Error fetching course content:", err);
@@ -68,13 +74,14 @@ const CourseContentPage = () => {
     fetchData();
   }, [courseId, getCourseContent]);
 
-  // Track window resize
+  //track window resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  //handle video, pdf, quiz clicks
   const handleResourceClick = (res) => {
     if (res.type === "video") {
       setCurrentVideo(res.url);
@@ -85,17 +92,27 @@ const CourseContentPage = () => {
     }
   };
 
-  const toggleModuleCompleted = (moduleId) => {
-    setCompletedModules((prev) => ({
-      ...prev,
-      [moduleId]: !prev[moduleId],
-    }));
+  //toggle module completion
+  const toggleModuleCompleted = async (moduleId) => {
+    const newState = !completedModules[moduleId];
+
+    try {
+      await updateProgress(moduleId, newState); // API call
+      setCompletedModules((prev) => ({
+        ...prev,
+        [moduleId]: newState,
+      }));
+    } catch (err) {
+      console.error("Error updating module progress:", err);
+    }
   };
 
+  //accordion toggle
   const handleToggleAccordion = (moduleId) => {
     setOpenModule(openModule === moduleId ? null : moduleId);
   };
 
+  //video height based on window size
   const getVideoHeight = () => {
     if (windowWidth >= 2560) return "600px";
     if (windowWidth >= 1440) return "400px";
@@ -136,7 +153,6 @@ const CourseContentPage = () => {
     );
   }
 
-
   return (
     <div className="flex flex-col lg:flex-row h-screen bg-gray-50">
       {/* Sidebar header (mobile) */}
@@ -156,11 +172,8 @@ const CourseContentPage = () => {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } w-3/4 lg:w-1/4`}
       >
-        {/* Course title */}
         <div className="p-4 border-b bg-gradient-to-r from-blue-500 to-blue-700 text-white flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-semibold">{courseData.name}</h2>
-          </div>
+          <h2 className="text-xl font-semibold">{courseData.name}</h2>
           <button
             className="lg:hidden text-white font-bold text-lg"
             onClick={() => setSidebarOpen(false)}
@@ -207,7 +220,6 @@ const CourseContentPage = () => {
                           </li>
                         ))}
                       </ul>
-                      {/* Add horizontal line except after last chapter  */}
                       {index !== module.chapters.length - 1 && (
                         <hr className="border-t-2 border-blue-200 my-3" />
                       )}
@@ -254,68 +266,3 @@ const CourseContentPage = () => {
 };
 
 export default CourseContentPage;
-
-
-/* backend sends -
-{
-    "modules": [
-        {
-            "module_id": "46ed31a3-e226-4bf8-b9c0-23d206de0426",
-            "module_title": "Introduction to React",
-            "module_order": 1,
-            "course_title": "React",
-            "chapters": [
-                {
-                    "note_url": "https://onlinelearningplatform.sgp1.digitaloceanspaces.com/notes/1758540490470-React_Lesson.pdf",
-                    "lesson_id": "565a5fcb-4628-4b39-b207-e15b241ddb29",
-                    "video_url": "https://onlinelearningplatform.sgp1.digitaloceanspaces.com/videos/1758540093576-React_Lesson.mp4",
-                    "lesson_title": "What is React?",
-                    "assignment_url": "https://onlinelearningplatform.sgp1.digitaloceanspaces.com/assignments/1758541470370-AssignmentReactJS.pdf"
-                },
-                {
-                    "note_url": "https://onlinelearningplatform.sgp1.digitaloceanspaces.com/notes/1758817081124-JavaScript.pdf",
-                    "lesson_id": "4b697cba-a3df-4249-ac94-a55a6aa36870",
-                    "video_url": null,
-                    "lesson_title": "Introduction to JavaScript",
-                    "assignment_url": null
-                },
-                {
-                    "note_url": null,
-                    "lesson_id": "c13a90b2-0cfc-489a-8abe-de87fbb6a94e",
-                    "video_url": null,
-                    "lesson_title": "Getting Started with React",
-                    "assignment_url": null
-                },
-                {
-                    "note_url": null,
-                    "lesson_id": "950c15e3-5679-4b2d-b40a-b8d3d6eea77f",
-                    "video_url": null,
-                    "lesson_title": "React Components",
-                    "assignment_url": null
-                },
-                {
-                    "note_url": null,
-                    "lesson_id": "d150ecba-f947-4e3b-a57c-c763aa47c77b",
-                    "video_url": null,
-                    "lesson_title": "JSX Syntax",
-                    "assignment_url": null
-                },
-                {
-                    "note_url": null,
-                    "lesson_id": "d493f590-6258-4959-9d2f-21f512957164",
-                    "video_url": null,
-                    "lesson_title": "Props in React",
-                    "assignment_url": null
-                },
-                {
-                    "note_url": null,
-                    "lesson_id": "172e25e9-71bb-4e3f-b2c7-355cb4881b12",
-                    "video_url": null,
-                    "lesson_title": "React State",
-                    "assignment_url": null
-                }
-            ]
-        }
-    ]
-}
-*/

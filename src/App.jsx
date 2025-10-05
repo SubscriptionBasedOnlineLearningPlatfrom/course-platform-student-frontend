@@ -13,6 +13,7 @@ import CourseProgress from "./components/DashBoard/CourseProgress";
 import CertificatePage from "./pages/Certificate";
 import CourseContentPage from "./components/dashBoard/CourseContentPage";
 import Courses from "./pages/Courses";
+// import FeaturedCoursesPage from "./pages/FeaturedCoursesPage";
 import Subscription from "./pages/Subscription";
 import { AuthPage } from "./pages/AuthPage";
 import BillingSuccess from "./pages/BillingSuccess";
@@ -46,6 +47,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/courses" element={<Courses />} />
+          {/* <Route path="/featured-courses" element={<FeaturedCoursesPage />} /> */}
           <Route
             path="/courses/:courseId/progress"
             element={<CourseProgress />}

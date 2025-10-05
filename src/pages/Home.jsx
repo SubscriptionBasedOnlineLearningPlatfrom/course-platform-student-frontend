@@ -1,57 +1,153 @@
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/Components/Home/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/Home/ui/card";
 import { Badge } from "@/Components/Home/ui/badge";
 import { Input } from "@/Components/Home/ui/input";
 import { BookOpen, Users, Award, Star, Search, Play, Clock, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useApi } from "../contexts/ApiContext";
+import { toast } from "sonner";
 
 // import Header from "@/components/Header";
 // import Footer from "@/components/Footer";
 
 const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [featuredCourses, setFeaturedCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
   const navigate = useNavigate();
+  const searchRef = useRef(null);
+  const { getFeaturedCourses, searchCourses } = useApi();
 
-  const featuredCourses = [
-    {
-      id: 1,
-      title: "Complete Web Development Bootcamp",
-      instructor: "Dr. Sarah Wilson",
-      rating: 4.8,
-      students: 15420,
-      duration: "12 weeks",
-      level: "Beginner",
-      price: "$79/month",
-      image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=250&fit=crop",
-      description: "Master modern web development with React, Node.js, and MongoDB"
-    },
-    {
-      id: 2,
-      title: "Data Science & Machine Learning",
-      instructor: "Prof. Michael Chen",
-      rating: 4.9,
-      students: 8750,
-      duration: "16 weeks",
-      level: "Intermediate",
-      price: "$99/month",
-      image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop",
-      description: "Learn Python, statistics, and ML algorithms from industry experts"
-    },
-    {
-      id: 3,
-      title: "UI/UX Design Masterclass",
-      instructor: "Jessica Martinez",
-      rating: 4.7,
-      students: 12300,
-      duration: "10 weeks",
-      level: "Beginner",
-      price: "$69/month",
-      image: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop",
-      description: "Create stunning user interfaces and experiences with Figma and Adobe XD"
+  // Handle search functionality
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      navigate('/courses');
     }
-  ];
+    setShowSearchDropdown(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  // Real-time search as user types
+  const handleSearchChange = async (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+
+    if (query.trim().length === 0) {
+      setSearchResults([]);
+      setShowSearchDropdown(false);
+      return;
+    }
+
+    if (query.trim().length >= 1) {
+      setSearchLoading(true);
+      try {
+        const results = await searchCourses(query);
+        setSearchResults(results.slice(0, 8)); // Limit to 8 results
+        setShowSearchDropdown(true);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setSearchLoading(false);
+      }
+    }
+  };
+
+  // Handle clicking on a search result
+  const handleSearchResultClick = (courseId) => {
+    navigate(`/displayCourses/${courseId}`);
+    setShowSearchDropdown(false);
+    setSearchQuery("");
+  };
+
+  // Handle clicking outside search to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSearchDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Fetch featured courses based on real ratings from comments
+  useEffect(() => {
+    const fetchFeaturedCoursesData = async () => {
+      try {
+        setLoading(true);
+        const data = await getFeaturedCourses();
+        
+        console.log("🌟 Featured courses with real ratings:", data);
+        
+        // Map backend data to frontend format
+        const mappedCourses = data.map((course) => ({
+          id: course.course_id,
+          title: course.course_title,
+          description: course.course_description || "No description available",
+          image: course.thumbnail_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+          category: course.category || 'General',
+          level: course.level || 'Beginner',
+          price: course.course_price ? `$${course.course_price}` : 'Free',
+          rating: course.real_rating || course.rating || 4.5, // Use real rating from comments
+          students: course.enrolled_count || Math.floor(Math.random() * 10000) + 1000,
+          duration: course.duration ? `${course.duration} weeks` : "8 weeks",
+          instructor: course.instructor_name || "Expert Instructor",
+          commentCount: course.comment_count || 0,
+          isRealRating: course.real_rating > 0 // Flag to show if rating is real
+        }));
+
+        setFeaturedCourses(mappedCourses);
+        
+        // Show success message if we have real ratings
+        const realRatingsCount = mappedCourses.filter(c => c.isRealRating).length;
+        if (realRatingsCount > 0) {
+          console.log(`✨ ${realRatingsCount} courses with real ratings from student comments!`);
+        }
+        
+      } catch (error) {
+        console.error("Error fetching featured courses:", error);
+        toast.error("Failed to load featured courses");
+        
+        // Fallback to default courses if API fails
+        setFeaturedCourses([
+          {
+            id: "fallback-1",
+            title: "Explore Our Courses",
+            description: "Browse our complete course catalog",
+            image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop",
+            level: "All Levels",
+            price: "Free",
+            rating: 4.5,
+            students: 1000,
+            duration: "Various",
+            instructor: "Expert Instructors",
+            commentCount: 0,
+            isRealRating: false
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedCoursesData();
+  }, [getFeaturedCourses]);
 
   const stats = [
     { icon: BookOpen, value: "500+", label: "Courses Available" },
@@ -77,18 +173,81 @@ const Home = () => {
           Unlock expert-led courses, keep track of your growth, and earn credentials that showcase your skills. Start advancing your knowledge today.               </p>
           
           {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-8">
+          <div className="max-w-2xl mx-auto mb-8" ref={searchRef}>
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 placeholder="What do you want to learn today?"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
+                onKeyPress={handleKeyPress}
                 className="pl-12 pr-4 py-4 text-lg border-2 border-gray-200 focus:border-[#0173d1] rounded-full"
               />
-              <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full px-6 bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1]">
+              <Button 
+                onClick={handleSearch}
+                disabled={!searchQuery.trim()}
+                className={`absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full px-6 transition-all duration-200 ${
+                  searchQuery.trim() 
+                    ? 'bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] text-white cursor-pointer' 
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
                 Search
               </Button>
+              
+              {/* Search Dropdown */}
+              {showSearchDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
+                  {searchLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0173d1] mx-auto mb-2"></div>
+                      Searching...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="py-2">
+                      {searchResults.map((course) => (
+                        <div
+                          key={course.course_id}
+                          onClick={() => handleSearchResultClick(course.course_id)}
+                          className="px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <img
+                              src={course.thumbnail_url || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60&h=60&fit=crop"}
+                              alt={course.course_title}
+                              className="w-12 h-12 rounded-lg object-cover"
+                              onError={(e) => {
+                                e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=60&h=60&fit=crop";
+                              }}
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-medium text-gray-900 text-sm">{course.course_title}</h4>
+                              <p className="text-xs text-gray-500 line-clamp-1">{course.course_description}</p>
+                              <div className="flex items-center mt-1 space-x-2">
+                                <Badge variant="secondary" className="text-xs">{course.category}</Badge>
+                                <span className="text-xs text-gray-400">•</span>
+                                <span className="text-xs text-gray-500">{course.level}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="flex items-center space-x-1">
+                                <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                                <span className="text-xs font-medium">{course.rating}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      <Search className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">No courses found for "{searchQuery}"</p>
+                      <p className="text-xs text-gray-400 mt-1">Try different keywords</p>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -132,59 +291,92 @@ const Home = () => {
             <p className="text-xl text-gray-600">Discover our most popular and highly-rated courses</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featuredCourses.map((course) => (
-              <Card key={course.id} className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white overflow-hidden">
-                <div className="relative overflow-hidden">
-                  <img
-                    src={course.image}
-                    alt={course.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <Badge className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] text-white">
-                      {course.level}
-                    </Badge>
-                  </div>
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <Button size="lg" className="bg-white/90 text-gray-900 hover:bg-white rounded-full">
-                      <Play className="w-5 h-5 mr-2" />
-                      Preview
-                    </Button>
-                  </div>
-                </div>
-                
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-xl font-bold group-hover:text-[#0173d1] transition-colors">
-                    {course.title}
-                  </CardTitle>
-                  <p className="text-gray-600">by {course.instructor}</p>
-                </CardHeader>
-                
-                <CardContent>
-                  <p className="text-gray-600 mb-4 line-clamp-2">{course.description}</p>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-semibold">{course.rating}</span>
-                      <span className="text-gray-500">({course.students.toLocaleString()})</span>
+          {loading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-[#0173d1]"></div>
+              <span className="ml-4 text-lg text-gray-600">Loading featured courses...</span>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredCourses.map((course) => (
+                <Card key={course.id} className="group hover:shadow-2xl transition-all duration-300 border-0 bg-white overflow-hidden">
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={course.image}
+                      alt={course.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop";
+                      }}
+                    />
+                    <div className="absolute top-4 left-4">
+                      <Badge className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] text-white">
+                        {course.level}
+                      </Badge>
                     </div>
-                    <div className="flex items-center text-gray-500">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {course.duration}
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <Button 
+                        size="lg" 
+                        className="bg-white/90 text-gray-900 hover:bg-white rounded-full"
+                        onClick={() => navigate(`/displayCourses/${course.id}`)}
+                      >
+                        <Play className="w-5 h-5 mr-2" />
+                        Preview
+                      </Button>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-[#0173d1]">{course.price}</span>
-                    <Button onClick={() => navigate("/displayCourses")} className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1]">
-                      Enroll Now
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-xl font-bold group-hover:text-[#0173d1] transition-colors line-clamp-2">
+                      {course.title}
+                    </CardTitle>
+                    <p className="text-gray-600">by {course.instructor}</p>
+                  </CardHeader>
+                  
+                  <CardContent>
+                    <p className="text-gray-600 mb-4 line-clamp-2">{course.description}</p>
+                    
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-semibold">{course.rating}</span>
+                        {course.isRealRating && (
+                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                            {course.commentCount} reviews
+                          </span>
+                        )}
+                        {!course.isRealRating && (
+                          <span className="text-gray-500">({course.students.toLocaleString()})</span>
+                        )}
+                      </div>
+                      <div className="flex items-center text-gray-500">
+                        <Clock className="w-4 h-4 mr-1" />
+                        {course.duration}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-2xl font-bold text-[#0173d1]">{course.price}</span>
+                      <Button 
+                        onClick={() => navigate(`/displayCourses/${course.id}`)} 
+                        className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1]"
+                      >
+                        View Course
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {/* View All Courses Button */}
+          <div className="text-center mt-12">
+            <Link to="/courses">
+              <Button size="lg" variant="outline" className="border-2 border-[#0173d1] text-[#0173d1] hover:bg-[#0173d1] hover:text-white px-8 py-3">
+                View All Courses
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

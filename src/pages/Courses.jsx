@@ -36,7 +36,9 @@ const Courses = () => {
           id: course.course_id,
           name: course.course_title,
           description: course.course_description || "No description available",
+
           image: course.thumbnail_url || course1, // use thumbnail_url from backend, fallback to placeholder
+
           level: course.level,
           category: course.category,
         }));

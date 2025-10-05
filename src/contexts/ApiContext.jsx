@@ -53,8 +53,6 @@ const getCourseContent = async (courseId) => {
   return response.data;
 };
 
-
-// INSERT this in enroll button and check boxes!!!!!
 const startProgressTracking = async (courseId) => {
   const response = await api.post(`/student/course/track-progress`, { courseId });
   return response.data;
@@ -65,6 +63,11 @@ const updateProgress = async (moduleId, checked) => {
     moduleId,
     isCompleted: checked, 
   });
+  return response.data;
+};
+
+const getProgress = async (courseId) => {
+  const response = await api.get(`/student/course/${courseId}/progress`); 
   return response.data;
 };
 
@@ -88,6 +91,7 @@ export const ApiProvider = ({ children }) => {
         getCourseContent,
         startProgressTracking,
         updateProgress,
+        getProgress,
       }}
     >
       {children}

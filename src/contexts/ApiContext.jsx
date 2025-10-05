@@ -48,6 +48,16 @@ const getAllCourses = async () => {
   return response.data;
 };
 
+const getFeaturedCourses = async () => {
+  const response = await publicApi.get("/student/courses/featured");
+  return response.data;
+};
+
+const getCoursesWithRatings = async () => {
+  const response = await publicApi.get("/student/courses/with-ratings");
+  return response.data;
+};
+
 const getCourseContent = async (courseId) => {
   const response = await api.get(`/student/course/${courseId}/content`); 
   return response.data;
@@ -71,6 +81,11 @@ const getProgress = async (courseId) => {
   return response.data;
 };
 
+const searchCourses = async (query) => {
+  if (!query || query.trim().length < 1) return [];
+  const response = await publicApi.get(`/student/courses?search=${encodeURIComponent(query.trim())}`);
+  return response.data;
+};
 
 // =======================
 // CONTEXT
@@ -88,10 +103,13 @@ export const ApiProvider = ({ children }) => {
         publicApi,   // public API instance
         BackendAPI,  // base URL for students
         getAllCourses,
+        getFeaturedCourses,
+        getCoursesWithRatings,
         getCourseContent,
         startProgressTracking,
         updateProgress,
         getProgress,
+        searchCourses,
       }}
     >
       {children}

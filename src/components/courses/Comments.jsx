@@ -4,6 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../../contexts/ApiContext";
 import { toast } from "react-toastify";
 import { CourseContext } from "@/contexts/CourseContext";
+import { AiFillStar } from "react-icons/ai";
 
 const Comments = () => {
   const { courseId } = useParams();
@@ -19,7 +20,14 @@ const Comments = () => {
   const [filterBy, setFilterBy] = useState("all");
   const [showReplyForm, setShowReplyForm] = useState(null);
   const [replyText, setReplyText] = useState("");
+  const [openReplies, setOpenReplies] = useState("");
+  const [editingId, setEditingId] = useState("");
+  const [editText, setEditText] = useState("");
+  const [editRating, setEditRating] = useState("");
+  const [editingReplyId, setEditingReplyId] = useState(null);
+  const [editReplyText, setEditReplyText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const [me, setMe] = useState(null);
   const { avgRating, setAvgRating } = useContext(CourseContext);
 
   const studentToken = localStorage.getItem("studentToken");
@@ -28,15 +36,22 @@ const Comments = () => {
   useEffect(() => {
     try {
       if (!courseId) return;
+
       const fetchComments = async () => {
         const response = await axios.get(
           `${BackendAPI}/courses/comments-with-replies/${courseId}`
         );
 
-        console.log(response);
         if (response.status === 200) {
           setComments(response.data.comments || []);
           setLoading(false);
+        }
+
+        if (studentToken) {
+          const profile = await axios.get(`${BackendAPI}/profile`, {
+            headers: { Authorization: `Bearer ${studentToken}` },
+          });
+          setMe(profile.data);
         }
       };
       fetchComments();
@@ -59,6 +74,13 @@ const Comments = () => {
     setAvgRating(averageRating);
   }, [averageRating, setAvgRating]);
 
+  const isOwner = (item) => {
+    if (!me) return false;
+    return String(item.student_id) === String(me.student_id);
+  };
+
+  const toggleReplies = (id) => setOpenReplies((s) => ({ ...s, [id]: !s[id] }));
+
   // Get rating distribution
   const ratingDistribution = {
     5: comments.filter((c) => c.rating === 5).length,
@@ -77,7 +99,6 @@ const Comments = () => {
     if (!newComment.trim() || rating === 0) return;
     setIsSubmitting(true);
     try {
-      const studentToken = localStorage.getItem("studentToken");
       const response = await axios.post(
         `${BackendAPI}/courses/create-comment/${courseId}`,
         { rating, comment_text: newComment },
@@ -87,9 +108,27 @@ const Comments = () => {
           },
         }
       );
-      console.log(response);
-      setComments((prev) => [...prev, response.data]);
 
+      const user = await axios.get(`${BackendAPI}/profile`, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+      console.log(response);
+      console.log(user);
+      const newCommentObj = {
+        comment_id: response.data.comment_id,
+        comment_text: response.data.comment_text ?? newComment,
+        rating: Number(response.data.rating ?? rating),
+        created_at: new Date().toISOString(),
+        replies: Array.isArray(response.data.replies)
+          ? response.data.replies
+          : [],
+        student_name: user.data.username,
+        user_profile: user.data.user_profile,
+      };
+      console.log(newCommentObj);
+      setComments((prev) => [...prev, newCommentObj]);
       setNewComment("");
       setRating(0);
       setIsSubmitting(false);
@@ -105,7 +144,59 @@ const Comments = () => {
     }
   };
 
-  // Handle reply submission
+  const startEdit = (c) => {
+    setEditingId(c.comment_id);
+    setEditText(c.comment_text || "");
+    setEditRating(Number(c.rating || 0));
+  };
+
+  const submitEdit = async (id) => {
+    if (!studentToken) return navigate("/auth");
+    if (!editText.trim()) return;
+    setIsSubmitting(true);
+    try {
+      const res = await axios.put(`${BackendAPI}/courses/edit-comment/${id}`, {
+        comment_text: editText,
+        rating: editRating,
+      });
+      const data = res.data;
+      setComments((p) =>
+        p.map((c) =>
+          c.comment_id === id
+            ? {
+                ...c,
+                comment_text: data.comment_text ?? editText,
+                rating: Number(data.rating ?? editRating),
+              }
+            : c
+        )
+      );
+      setEditingId(null);
+      toast.success("Updated");
+    } catch (e) {
+      toast.error("Update failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteComment = async (id) => {
+    if (!studentToken) return navigate("/auth");
+    if (!window.confirm("Delete comment?")) return;
+    setIsSubmitting(true);
+    try {
+      await axios.delete(`${BackendAPI}/courses/delete-comment/${id}`, {
+        headers: { Authorization: `Bearer ${studentToken}` },
+      });
+      setComments((p) => p.filter((c) => c.comment_id !== id));
+      toast.success("Deleted");
+    } catch (e) {
+      toast.error("Delete failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleSubmitReply = async (commentId) => {
     if (!replyText.trim()) return;
     if (!studentToken) {
@@ -113,30 +204,43 @@ const Comments = () => {
       return;
     }
 
+    setIsSubmitting(true);
     try {
       const studentToken = localStorage.getItem("studentToken");
+
+      // Create reply
       const response = await axios.post(
         `${BackendAPI}/courses/create-reply`,
         { comment_id: commentId, reply_text: replyText },
         {
-          headers: {
-            Authorization: `Bearer ${studentToken}`,
-          },
+          headers: { Authorization: `Bearer ${studentToken}` },
         }
       );
 
-      setComments(
-        comments.map((comment) =>
+      // Fetch current student profile
+      const user = await axios.get(`${BackendAPI}/profile`, {
+        headers: { Authorization: `Bearer ${studentToken}` },
+      });
+
+      const newReply = {
+        reply_id: response.data.reply_id,
+        reply_text: response.data.reply_text ?? replyText,
+        created_at: new Date().toISOString(),
+        student_name: user.data.username,
+        user_profile: user.data.user_profile,
+      };
+
+      // Update comments state with new reply
+      setComments((prev) =>
+        prev.map((comment) =>
           comment.comment_id === commentId
-            ? { ...comment, replies: [...comment.replies, response.data] }
+            ? { ...comment, replies: [...comment.replies, newReply] }
             : comment
         )
       );
-      console.log(comments);
 
       setReplyText("");
       setShowReplyForm(null);
-
       toast.success("Reply submitted successfully");
     } catch (error) {
       const server =
@@ -145,6 +249,80 @@ const Comments = () => {
         error.message;
       setErrorMsg(server || "Something went wrong. Please try again.");
       toast.error(server || "Failed to submit reply");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const startEditReply = (reply) => {
+    setEditingReplyId(reply.reply_id);
+    setEditReplyText(reply.reply_text);
+  };
+
+  const submitEditReply = async (replyId, commentId) => {
+    if (!studentToken) return navigate("/auth");
+    if (!editReplyText.trim()) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await axios.put(
+        `${BackendAPI}/courses/edit-reply/${replyId}`,
+        { reply_text: editReplyText }
+      );
+      const data = res.data;
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.comment_id === commentId
+            ? {
+                ...comment,
+                replies: comment.replies.map((reply) =>
+                  reply.reply_id === replyId
+                    ? { ...reply, reply_text: data.reply_text ?? editReplyText }
+                    : reply
+                ),
+              }
+            : comment
+        )
+      );
+
+      setEditingReplyId(null);
+      toast.success("Reply updated successfully");
+    } catch (error) {
+      toast.error("Failed to update reply");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const deleteReply = async (replyId, commentId) => {
+    if (!studentToken) return navigate("/auth");
+    if (!window.confirm("Delete reply?")) return;
+
+    setIsSubmitting(true);
+    try {
+      await axios.delete(`${BackendAPI}/courses/delete-reply/${replyId}`, {
+        headers: { Authorization: `Bearer ${studentToken}` },
+      });
+
+      setComments((prev) =>
+        prev.map((comment) =>
+          comment.comment_id === commentId
+            ? {
+                ...comment,
+                replies: comment.replies.filter(
+                  (reply) => reply.reply_id !== replyId
+                ),
+              }
+            : comment
+        )
+      );
+
+      toast.success("Reply deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete reply");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -183,7 +361,7 @@ const Comments = () => {
           onMouseLeave={() => interactive && setHoverRating(0)}
           disabled={!interactive}
         >
-          ★
+          <AiFillStar />
         </button>
       );
     });
@@ -346,7 +524,8 @@ const Comments = () => {
                 className="border-b border-gray-200 pb-6 last:border-b-0"
               >
                 <div className="flex items-start space-x-4">
-                  <span className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-600 text-white font-bold text-lg flex-shrink-0 overflow-hidden">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 shadow-inner ring-1 ring-gray-100">
                     {comment.user_profile ? (
                       <img
                         src={comment.user_profile}
@@ -354,33 +533,118 @@ const Comments = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      comment.student_name?.charAt(0).toUpperCase() || "U"
+                      <div className="w-full h-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-semibold">
+                        {comment.student_name?.charAt(0).toUpperCase() || "U"}
+                      </div>
                     )}
-                  </span>
+                  </div>
 
                   <div className="flex-1">
-                    {/* User Info and Rating */}
-                    <div className="flex items-center justify-between mb-2">
-                      <h5 className="font-medium text-gray-900 text-sm">
-                        {comment.student_name}
-                      </h5>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex text-yellow-400 text-sm">
-                          {renderStars(comment.rating)}
+                    {/* Header: name, badge, rating, date */}
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h5 className="font-medium text-gray-900 text-sm truncate">
+                            {comment.student_name}
+                          </h5>
+                          {/* Owner badge (optional) */}
+                          {isOwner(comment) && (
+                            <span className="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-semibold">
+                              You
+                            </span>
+                          )}
                         </div>
-                        <span className="text-sm text-gray-500">
-                          {formatDate(comment.created_at)}
-                        </span>
+                        <div className="flex items-center gap-3 mt-1">
+                          <div className="flex text-yellow-400 text-sm -ml-0.5">
+                            {renderStars(comment.rating)}
+                          </div>
+                          <span className="text-xs text-gray-400">
+                            {formatDate(comment.created_at)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => toggleReplies(comment.comment_id)}
+                          className="text-xs px-3 py-1 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+                        >
+                          {(openReplies[comment.comment_id] ? "Hide" : "Show") +
+                            ` (${(comment.replies || []).length})`}
+                        </button>
+
+                        {isOwner(comment) && (
+                          <>
+                            <button
+                              onClick={() => startEdit(comment)}
+                              className="text-xs px-3 py-1 rounded-full bg-white border border-blue-100 text-blue-600 hover:bg-blue-50 transition"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => deleteComment(comment.comment_id)}
+                              className="text-xs px-3 py-1 rounded-full bg-white border border-red-100 text-red-600 hover:bg-red-50 transition"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    {/* Comment Text */}
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      {comment.comment_text}
-                    </p>
+                    {/* Comment content / edit form */}
+                    {editingId === comment.comment_id ? (
+                      <div className="mt-3 bg-white rounded-lg p-3 border">
+                        <textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="w-full border rounded p-2 mb-2 focus:ring-2 focus:ring-indigo-200"
+                          rows={3}
+                        />
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center space-x-2">
+                            <select
+                              value={editRating}
+                              onChange={(e) =>
+                                setEditRating(Number(e.target.value))
+                              }
+                              className="border px-2 py-1 rounded"
+                            >
+                              {[5, 4, 3, 2, 1].map((s) => (
+                                <option key={s} value={s}>
+                                  {s}
+                                </option>
+                              ))}
+                            </select>
+                            <AiFillStar className="text-yellow-400 text-xl" />
+                          </div>
 
-                    {/* Comment Actions */}
-                    <div className="flex items-center space-x-6 text-sm">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => submitEdit(comment.comment_id)}
+                              disabled={isSubmitting || !editText.trim()}
+                              className="px-3 py-1 rounded bg-green-600 text-white text-sm hover:brightness-105 transition"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="px-3 py-1 rounded border text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-gray-700 leading-relaxed">
+                        {comment.comment_text}
+                      </p>
+                    )}
+
+                    {/* Reply button */}
+                    <div className="flex items-center space-x-4 text-sm mt-3">
                       <button
                         onClick={() =>
                           setShowReplyForm(
@@ -389,21 +653,21 @@ const Comments = () => {
                               : comment.comment_id
                           )
                         }
-                        className="text-gray-600 hover:text-blue-600 transition-colors cursor-pointer"
+                        className="text-sm text-gray-600 hover:text-blue-600 transition-colors"
                       >
                         Reply
                       </button>
                     </div>
 
-                    {/* Reply Form */}
+                    {/* Reply form */}
                     {showReplyForm === comment.comment_id && (
-                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg shadow-sm">
                         <textarea
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
                           placeholder="Write your reply..."
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
-                          rows="3"
+                          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-200 resize-none"
+                          rows={3}
                         />
                         <div className="flex items-center space-x-3 mt-3">
                           <button
@@ -411,7 +675,7 @@ const Comments = () => {
                               handleSubmitReply(comment.comment_id)
                             }
                             disabled={!replyText.trim()}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg text-sm font-medium transition"
                           >
                             Post Reply
                           </button>
@@ -420,7 +684,7 @@ const Comments = () => {
                               setShowReplyForm(null);
                               setReplyText("");
                             }}
-                            className="text-gray-600 hover:text-gray-800 px-4 py-2 rounded-lg text-sm"
+                            className="text-gray-600 hover:text-gray-800 px-3 py-1 rounded text-sm"
                           >
                             Cancel
                           </button>
@@ -433,74 +697,111 @@ const Comments = () => {
                       </div>
                     )}
 
-                    {/* Replies */}
-                    {comment.replies && comment.replies.length > 0 && (
-                      <div className="mt-6 space-y-4">
-                        {comment.replies.map((reply) => (
-                          <div
-                            key={reply.reply_id}
-                            className="bg-gray-50 rounded-lg p-4 ml-4"
-                          >
-                            <div className="flex items-start space-x-3">
-                              <span className="w-8 h-8 rounded-full flex items-center justify-center bg-green-600 text-white font-bold text-sm flex-shrink-0 overflow-hidden">
-                                {reply.user_profile ? (
-                                  <img
-                                    src={reply.user_profile}
-                                    alt={
-                                      reply.student_name ||
-                                      reply.instructor_name ||
-                                      "User"
-                                    }
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  reply.student_name?.charAt(0).toUpperCase() ||
-                                  reply.instructor_name
-                                    ?.charAt(0)
-                                    .toUpperCase() ||
-                                  "U"
-                                )}
-                              </span>
-
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-2">
-                                  <h5 className="font-medium text-gray-900 text-sm">
-                                    {reply.student_name ||
-                                      reply.instructor_name}
-                                  </h5>
-                                  {reply.instructor_id && (
-                                    <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full font-medium">
-                                      Instructor
-                                    </span>
+                    {/* Replies list (toggleable) */}
+                    {openReplies[comment.comment_id] &&
+                      (comment.replies || []).length > 0 && (
+                        <div className="mt-6 space-y-4">
+                          {comment.replies.map((reply) => (
+                            <div
+                              key={reply.reply_id}
+                              className="bg-white rounded-lg p-4 ml-4 shadow-sm border"
+                            >
+                              <div className="flex items-start space-x-3">
+                                {/* Avatar */}
+                                <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                                  {reply.user_profile ? (
+                                    <img
+                                      src={reply.user_profile}
+                                      alt={reply.student_name || "User"}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-gray-300 flex items-center justify-center text-white font-semibold">
+                                      {(reply.student_name || "U").charAt(0)}
+                                    </div>
                                   )}
-                                  <span className="text-xs text-gray-500">
-                                    {formatDate(reply.created_at)}
-                                  </span>
                                 </div>
-                                <p className="text-gray-700 text-sm">
-                                  {reply.reply_text}
-                                </p>
+
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h5 className="font-medium text-gray-900 text-sm">
+                                      {reply.student_name}
+                                    </h5>
+                                    <span className="text-xs text-gray-400 ml-auto">
+                                      {formatDate(reply.created_at)}
+                                    </span>
+                                  </div>
+
+                                  {editingReplyId === reply.reply_id ? (
+                                    <div className="flex gap-2 mt-1">
+                                      <input
+                                        type="text"
+                                        value={editReplyText}
+                                        onChange={(e) =>
+                                          setEditReplyText(e.target.value)
+                                        }
+                                        className="w-full border rounded px-2 py-1"
+                                      />
+                                      <button
+                                        onClick={() =>
+                                          submitEditReply(
+                                            reply.reply_id,
+                                            comment.comment_id
+                                          )
+                                        }
+                                        className="px-2 py-1 bg-green-600 text-white rounded"
+                                        disabled={isSubmitting}
+                                      >
+                                        Save
+                                      </button>
+                                      <button
+                                        onClick={() => setEditingReplyId(null)}
+                                        className="px-2 py-1 border rounded"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <p className="text-gray-700 text-sm">
+                                      {reply.reply_text}
+                                    </p>
+                                  )}
+
+                                  {/* Action buttons */}
+                                  {isOwner(reply) &&
+                                    editingReplyId !== reply.reply_id && (
+                                      <div className="flex gap-2 mt-2 text-xs">
+                                        <button
+                                          onClick={() => startEditReply(reply)}
+                                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded"
+                                        >
+                                          Edit
+                                        </button>
+                                        <button
+                                          onClick={() =>
+                                            deleteReply(
+                                              reply.reply_id,
+                                              comment.comment_id
+                                            )
+                                          }
+                                          className="px-2 py-1 bg-red-100 text-red-700 rounded"
+                                        >
+                                          Delete
+                                        </button>
+                                      </div>
+                                    )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </div>
               </div>
             ))
           )}
         </div>
-
-        {/* Load More Button */}
-        {comments.length > 0 && (
-          <div className="text-center mt-8">
-            <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-6 py-3 rounded-lg transition-colors duration-200">
-              Load More Reviews
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

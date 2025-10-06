@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../../contexts/ApiContext";
+import AssignmentSection from "../../components/dashBoard/AssignmentSection.jsx";
 import { QuizComponent } from "../quizes/Quiz";
 
 const CourseContentPage = () => {
@@ -242,8 +243,8 @@ const CourseContentPage = () => {
       </div>
 
       {/* Main Content */}
-      <div className="w-full lg:flex-1 flex flex-col p-6 lg:ml-1/4">
-        <div className="flex-1">
+      <div className="w-full lg:flex-1 flex flex-col p-6 lg:ml-1/4 overflow-y-auto">
+        <div className="mb-2">
           {currentVideo ? (
             <video
               src={currentVideo}
@@ -260,7 +261,13 @@ const CourseContentPage = () => {
             </div>
           )}
         </div>
+
+        {/* Assignment Section */}
+        <div className="mt-2">
+          <AssignmentSection courseId={courseId} />
+        </div>
       </div>
+
     </div>
   );
 };

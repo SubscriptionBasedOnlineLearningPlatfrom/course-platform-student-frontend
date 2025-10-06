@@ -17,11 +17,14 @@ const CourseDetails = () => {
   const navigate = useNavigate();
   const { courseId } = useParams();
   const { BackendAPI } = useApi();
+  const studentToken = localStorage.getItem('studentToken');
   const {
     course,
     setCourse,
     modules,
     setModules,
+    avgRating,
+    setAvgRating,
     fetchCourseDetails,
     fetchRelatedCourses,
     checkPaymentActive,
@@ -31,6 +34,7 @@ const CourseDetails = () => {
   // fetch the course when id changes
   useEffect(() => {
     fetchCourseDetails(BackendAPI, courseId);
+    console.log(avgRating);
   }, [BackendAPI, courseId]);
 
   // fetch related courses when category changes
@@ -67,17 +71,17 @@ const CourseDetails = () => {
   const handleEnrollment = async (courseId) => {
     try {
       const studentToken = localStorage.getItem("studentToken");
-      
+
       const response = await axios.post(
         `${BackendAPI}/courses/enrollment`,
-        {course_id:courseId},
+        { course_id: courseId },
         {
           headers: {
             Authorization: `Bearer ${studentToken}`,
           },
         }
       );
-      console.log(response)
+      console.log(response);
       if (response.status === 200) {
         navigate(`/courses/${courseId}/content`);
         toast.success("enrollment successfully!");
@@ -168,7 +172,7 @@ const CourseDetails = () => {
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold flex items-center gap-2">
                       <FaStar className="text-yellow-400" />
-                      <span>{course.rating || "0.0"}</span>
+                      <span>{avgRating || "0.0"}</span>
                     </div>
                     <div className="text-sm text-gray-500">Rating</div>
                   </div>
@@ -261,10 +265,14 @@ const CourseDetails = () => {
                 <button
                   onClick={() => {
                     setEnrolled(true);
-                    if (isActive) {
-                      handleEnrollment(course.course_id);
+                    if (!studentToken) {
+                      navigate("/auth");
                     } else {
-                      navigate(`/subscription/${course.course_id}`);
+                      if (isActive) {
+                        handleEnrollment(course.course_id);
+                      } else {
+                        navigate(`/subscription/${course.course_id}`);
+                      }
                     }
                   }}
                   className={`w-full bg-white text-[#0173d1] font-semibold py-3 px-4 rounded-xl hover:bg-gray-50 transition-colors duration-200 cursor-pointer ${

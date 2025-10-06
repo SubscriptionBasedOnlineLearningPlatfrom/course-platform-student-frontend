@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../../contexts/ApiContext";
 import { toast } from "react-toastify";
+import { CourseContext } from "@/contexts/CourseContext";
 
 const Comments = () => {
   const { courseId } = useParams();
   const { BackendAPI } = useApi();
+  const navigate = useNavigate();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
@@ -18,6 +20,9 @@ const Comments = () => {
   const [showReplyForm, setShowReplyForm] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
+  const { avgRating, setAvgRating } = useContext(CourseContext);
+
+  const studentToken = localStorage.getItem("studentToken");
 
   // Fetch comments when component mounts or courseId changes
   useEffect(() => {
@@ -50,6 +55,10 @@ const Comments = () => {
         ).toFixed(1)
       : 0;
 
+  useEffect(() => {
+    setAvgRating(averageRating);
+  }, [averageRating, setAvgRating]);
+
   // Get rating distribution
   const ratingDistribution = {
     5: comments.filter((c) => c.rating === 5).length,
@@ -61,6 +70,10 @@ const Comments = () => {
 
   const handleSubmitComment = async (e) => {
     e.preventDefault();
+    if (!studentToken) {
+      navigate("/auth");
+      return;
+    }
     if (!newComment.trim() || rating === 0) return;
     setIsSubmitting(true);
     try {
@@ -95,6 +108,10 @@ const Comments = () => {
   // Handle reply submission
   const handleSubmitReply = async (commentId) => {
     if (!replyText.trim()) return;
+    if (!studentToken) {
+      navigate("/auth");
+      return;
+    }
 
     try {
       const studentToken = localStorage.getItem("studentToken");
@@ -417,7 +434,7 @@ const Comments = () => {
                     )}
 
                     {/* Replies */}
-                    {comment.replies.length > 0 && (
+                    {comment.replies && comment.replies.length > 0 && (
                       <div className="mt-6 space-y-4">
                         {comment.replies.map((reply) => (
                           <div

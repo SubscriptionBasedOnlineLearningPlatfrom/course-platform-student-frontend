@@ -11,6 +11,7 @@ export const CourseProvider = ({ children }) => {
   const [dashboardData, setDashboardData] = useState(null);
   const [streakData, setStreakData] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [avgRating,setAvgRating] = useState(0);
 
   const studentToken = localStorage.getItem("studentToken");
 
@@ -122,6 +123,8 @@ export const CourseProvider = ({ children }) => {
         setDashboardData,
         streakData,
         setStreakData,
+        avgRating,
+        setAvgRating,
         enrolledCourses,
         setEnrolledCourses,
         fetchCourseDetails,

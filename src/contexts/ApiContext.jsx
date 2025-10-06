@@ -81,6 +81,24 @@ const getProgress = async (courseId) => {
   return response.data;
 };
 
+const getSubmission = async (courseId) => {
+  const response = await api.get(`/student/assignments/${courseId}`); 
+  return response.data;
+};
+
+const addSubmission = async (courseId, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await api.post(
+    `/student/assignments/${courseId}/submit`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+};
+
+
 const searchCourses = async (query) => {
   if (!query || query.trim().length < 1) return [];
   const response = await publicApi.get(`/student/courses?search=${encodeURIComponent(query.trim())}`);
@@ -110,6 +128,8 @@ export const ApiProvider = ({ children }) => {
         updateProgress,
         getProgress,
         searchCourses,
+        getSubmission,
+        addSubmission,
       }}
     >
       {children}

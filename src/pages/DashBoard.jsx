@@ -1,7 +1,7 @@
 import React, { use, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import EnrolledCourses from "../Components/DashBoard/EnrolledCourses";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../Contexts/APIContext";
 import { CourseContext } from "../Contexts/CourseContext";
 
@@ -21,16 +21,18 @@ const DashBoard = () => {
   const {
     dashboardData,
     streakData,
+    progressPercentage,
     fetchDashboardData,
     fetchEnrolledCourses,
   } = useContext(CourseContext);
+  
 
   useEffect(() => {
     (async () => {
       console.log("Fetching dashboard data...");
       await Promise.all([
         fetchDashboardData(BackendAPI),
-        fetchEnrolledCourses(BackendAPI),
+        fetchEnrolledCourses(BackendAPI)
       ]);
     })();
   }, [BackendAPI]);

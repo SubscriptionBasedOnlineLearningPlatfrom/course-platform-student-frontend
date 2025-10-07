@@ -12,6 +12,7 @@ export const CourseProvider = ({ children }) => {
   const [streakData, setStreakData] = useState(null);
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [avgRating,setAvgRating] = useState(0);
+  const [progressPercentage, setProgressPercentage] = useState(0);
 
   const studentToken = localStorage.getItem("studentToken");
 
@@ -78,7 +79,6 @@ export const CourseProvider = ({ children }) => {
   );
 
   const checkPaymentActive = async (BackendAPI) => {
-    const studentToken = localStorage.getItem('studentToken');
     const response = await axios.get(`${BackendAPI}/subscription/check`,{
       headers: {
         Authorization : `Bearer ${studentToken}`
@@ -94,7 +94,6 @@ export const CourseProvider = ({ children }) => {
   }
 
   const checkEnrollment = async (BackendAPI, courseId) => {
-    const studentToken = localStorage.getItem('studentToken');
     let isEnrollment = false;
     const response = await axios.get(`${BackendAPI}/courses/check-enrollment/${courseId}`,{
       headers: {
@@ -106,6 +105,22 @@ export const CourseProvider = ({ children }) => {
     return isEnrollment;
 
   }
+
+  const updateProgressPercentage = async (BackendAPI, courseId) => {
+    try {
+      const response = await axios.put(`${BackendAPI}/courses/progress-percentage/${courseId}`, {}, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+      console.log("Progress percentage updated:", response.data);
+      if (response.status === 200) {
+        setProgressPercentage(response.data.progressPercentage);
+      }
+    } catch (error) {
+      console.error("Error updating progress percentage:", error);
+    } 
+  };
 
 
   return (
@@ -127,13 +142,16 @@ export const CourseProvider = ({ children }) => {
         setAvgRating,
         enrolledCourses,
         setEnrolledCourses,
+        progressPercentage,
+        setProgressPercentage,
         fetchCourseDetails,
         fetchRelatedCourses,
         fetchDashboardData,
         fetchEnrolledCourses,
         completedCourses,
         checkPaymentActive,
-        checkEnrollment
+        checkEnrollment,
+        updateProgressPercentage
       }}
     >
       {children}

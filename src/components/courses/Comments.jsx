@@ -56,7 +56,6 @@ const Comments = () => {
       };
       fetchComments();
     } catch (error) {
-      console.log(error);
       console.error("Error fetching comments:", error);
     }
   }, [courseId, BackendAPI]);
@@ -114,8 +113,6 @@ const Comments = () => {
           Authorization: `Bearer ${studentToken}`,
         },
       });
-      console.log(response);
-      console.log(user);
       const newCommentObj = {
         comment_id: response.data.comment_id,
         comment_text: response.data.comment_text ?? newComment,
@@ -127,7 +124,6 @@ const Comments = () => {
         student_name: user.data.username,
         user_profile: user.data.user_profile,
       };
-      console.log(newCommentObj);
       setComments((prev) => [...prev, newCommentObj]);
       setNewComment("");
       setRating(0);

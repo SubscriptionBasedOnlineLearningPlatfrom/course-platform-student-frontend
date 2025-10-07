@@ -80,7 +80,7 @@ const CourseProgress = () => {
   ];
   const COLORS = ["#0088FE", "#FF8042"];
 
-  // Convert timestamp to YYYY-MM-DD
+  //convert timestamp to YYYY-MM-DD
   const lineData = courseProgress.modules
     .filter(m => m.completed)
     .map((m, index) => ({

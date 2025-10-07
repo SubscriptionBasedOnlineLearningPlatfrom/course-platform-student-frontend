@@ -1,7 +1,7 @@
 // SimpleQuiz.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "@/contexts/ApiContext";
 
 export const QuizCreation = () => {
@@ -14,9 +14,11 @@ export const QuizCreation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showNextQuestion, setShowNextQuestion] = useState(false);
+  const {courseId} = useParams();
 
   const navigate = useNavigate();
   const { BackendAPI } = useApi();
+  const studentToken = localStorage.getItem("studentToken");
 
   // Fetch quiz from backend when no prop
   useEffect(() => {
@@ -25,16 +27,17 @@ export const QuizCreation = () => {
       setError(null);
       try {
         // Replace this ID with whatever you need or pass as prop
-        const quizId = "f1dcb0c9-17de-4fe8-8ccf-c5e973faa444";
-        const response = await axios.get(`${BackendAPI}/quizzes/${quizId}`);
+        const lessonId = "d493f590-6258-4959-9d2f-21f512957164";
+        const response = await axios.get(`${BackendAPI}/quizzes/${lessonId}`);
         const data = response.data;
+        console.log("Fetched quiz data:", data.full);
 
-        setRawQuiz(data);
+        setRawQuiz(data.full);
 
-        if (!data.length) {
+        if (!data.full.length) {
           throw new Error("Quiz data is missing or malformed");
         }
-        setQuestions(data);
+        setQuestions(data.full || []);
       } catch (err) {
         console.error(err);
         setError(
@@ -120,6 +123,25 @@ export const QuizCreation = () => {
       return userAnswer === Number(q.correctAnswer);
     }).length;
 
+    const QuizMarks = async () => {
+      try {
+        const response = await axios.put(`${BackendAPI}/courses/add-quiz-marks/${courseId}`,
+          { newMark: percentage },
+          {
+            headers: {
+              Authorization : `Bearer ${studentToken}`
+            }
+          }
+        )
+        console.log("Quiz marks updated:", response.data);
+        if(response.status === 200){
+          navigate(`/courses/${courseId}/content`);
+        }
+      } catch (error) {
+        console.error("Error updating quiz marks:", error);
+      }
+    }
+
     return (
       <div className="min-h-screen p-4 lg:p-8 flex items-center justify-center">
         <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-8 lg:p-12 transform animate-fade-in-up">
@@ -159,7 +181,7 @@ export const QuizCreation = () => {
           </div>
           <div className="text-center">
             <button
-              onClick={() => navigate("/courses/2/content")}
+              onClick={QuizMarks}
               className="bg-[#0173d1] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg"
             >
               → Go to Content Page
@@ -196,7 +218,7 @@ export const QuizCreation = () => {
           <p className="text-lg text-gray-600 mb-6">
             {isCorrect
               ? currentQ.messageForCorrectAnswer || "Good job! 🎉"
-              : `The correct answer is: ${currentQ.answers[correctAnswer]}`}
+              : `The correct answer is: ${currentQ.answers[correctAnswer].answer_text}`}
           </p>
           <p className="text-lg text-gray-600 mb-6">
             {isCorrect
@@ -273,7 +295,7 @@ export const QuizCreation = () => {
                       {optionLetter}
                     </div>
                     <div className="flex-1 text-lg leading-relaxed">
-                      {answer}
+                      {answer.answer_text}
                     </div>
                   </div>
                 </div>

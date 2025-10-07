@@ -26,9 +26,7 @@ const CourseContentPage = () => {
   }, [completedModules]);
 
   // Fetch data from backend
-
   //fetch course content 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -101,7 +99,7 @@ const CourseContentPage = () => {
     } else if (res.type === "pdf") {
       window.open(res.url, "_blank", "noopener,noreferrer");
     } else if (res.type === "quiz") {
-      navigate("/QuizComponent");
+      navigate(`/quiz/${courseId}`);
     }
   };
 

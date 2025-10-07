@@ -13,6 +13,7 @@ export const CourseProvider = ({ children }) => {
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [avgRating,setAvgRating] = useState(0);
   const [progressPercentage, setProgressPercentage] = useState(0);
+  const [quizMark, setQuizMark] = useState(0);
 
   const studentToken = localStorage.getItem("studentToken");
 
@@ -122,6 +123,23 @@ export const CourseProvider = ({ children }) => {
     } 
   };
 
+  const getQuizMark = async (BackendAPI, courseId) => {
+    try {
+      const response = await axios.get(`${BackendAPI}/courses/quiz-marks/${courseId}`, {
+        headers: {
+          Authorization: `Bearer ${studentToken}`,
+        },
+      });
+      console.log("Quiz mark fetched:", response.data);
+      if (response.status === 200) {
+        setQuizMark(response.data.total.toFixed(2));
+      }
+    } catch (error) {
+      console.error("Error fetching quiz mark:", error);
+    }
+  }
+
+
 
   return (
     <CourseContext.Provider
@@ -144,6 +162,8 @@ export const CourseProvider = ({ children }) => {
         setEnrolledCourses,
         progressPercentage,
         setProgressPercentage,
+        quizMark,
+        setQuizMark,
         fetchCourseDetails,
         fetchRelatedCourses,
         fetchDashboardData,
@@ -151,7 +171,8 @@ export const CourseProvider = ({ children }) => {
         completedCourses,
         checkPaymentActive,
         checkEnrollment,
-        updateProgressPercentage
+        updateProgressPercentage,
+        getQuizMark
       }}
     >
       {children}

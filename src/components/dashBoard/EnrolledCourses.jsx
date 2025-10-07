@@ -35,18 +35,7 @@ const EnrolledCourses = () => {
       });
 
       // Sorting for enrolled
-      filtered?.sort((a, b) => {
-        switch (sortBy) {
-          case "recent":
-            return new Date(b.lastAccessed) - new Date(a.lastAccessed);
-          case "progress":
-            return b.progress - a.progress;
-          case "title":
-            return a.course_title.localeCompare(b.title);
-          default:
-            return 0;
-        }
-      });
+      
     } else {
       filtered = enrolledCourses.filter((course) => {
         const matchesSearch =
@@ -60,21 +49,7 @@ const EnrolledCourses = () => {
         return matchesSearch && matchesCategory;
       });
 
-      // Sorting for completed
-      filtered.sort((a, b) => {
-        switch (sortBy) {
-          case "recent":
-            return new Date(b.completion_date) - new Date(a.completion_date);
-          case "score":
-            return b.score - a.score;
-          case "title":
-            return a.course_title.localeCompare(b.course_title);
-          case "duration":
-            return b.duration - a.duration;
-          default:
-            return 0;
-        }
-      });
+      
     }
 
     setFilteredCourses(filtered);
@@ -195,27 +170,7 @@ const EnrolledCourses = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
 
-            <select
-              className="px-3 py-2 border rounded-lg"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-            >
-              {activeTab === "enrolled" ? (
-                <>
-                  <option value="recent">Recently Accessed</option>
-                  <option value="progress">Progress</option>
-                  <option value="title">Title A-Z</option>
-                  <option value="duration">Remaining Time</option>
-                </>
-              ) : (
-                <>
-                  <option value="recent">Recently Completed</option>
-                  <option value="score">Highest Score</option>
-                  <option value="title">Title A-Z</option>
-                  <option value="duration">Duration</option>
-                </>
-              )}
-            </select>
+            
           </div>
         </div>
       </div>

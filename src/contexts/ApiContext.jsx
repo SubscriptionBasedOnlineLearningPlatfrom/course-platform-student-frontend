@@ -10,7 +10,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("studentToken"); 
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -48,8 +48,60 @@ const getAllCourses = async () => {
   return response.data;
 };
 
+const getFeaturedCourses = async () => {
+  const response = await publicApi.get("/student/courses/featured");
+  return response.data;
+};
+
+const getCoursesWithRatings = async () => {
+  const response = await publicApi.get("/student/courses/with-ratings");
+  return response.data;
+};
+
 const getCourseContent = async (courseId) => {
-  const response = await publicApi.get(`/student/course/${courseId}/content`); // after login setup make this api not public
+  const response = await api.get(`/student/course/${courseId}/content`); 
+  return response.data;
+};
+
+const startProgressTracking = async (courseId) => {
+  const response = await api.post(`/student/course/track-progress`, { courseId });
+  return response.data;
+};
+
+const updateProgress = async (moduleId, checked) => {
+  const response = await api.patch(`/student/course/update-progress`, {
+    moduleId,
+    isCompleted: checked, 
+  });
+  return response.data;
+};
+
+const getProgress = async (courseId) => {
+  const response = await api.get(`/student/course/${courseId}/progress`); 
+  return response.data;
+};
+
+const getSubmission = async (courseId) => {
+  const response = await api.get(`/student/assignments/${courseId}`); 
+  return response.data;
+};
+
+const addSubmission = async (courseId, file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await api.post(
+    `/student/assignments/${courseId}/submit`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return response.data;
+};
+
+
+const searchCourses = async (query) => {
+  if (!query || query.trim().length < 1) return [];
+  const response = await publicApi.get(`/student/courses?search=${encodeURIComponent(query.trim())}`);
   return response.data;
 };
 
@@ -69,7 +121,15 @@ export const ApiProvider = ({ children }) => {
         publicApi,   // public API instance
         BackendAPI,  // base URL for students
         getAllCourses,
+        getFeaturedCourses,
+        getCoursesWithRatings,
         getCourseContent,
+        startProgressTracking,
+        updateProgress,
+        getProgress,
+        searchCourses,
+        getSubmission,
+        addSubmission,
       }}
     >
       {children}

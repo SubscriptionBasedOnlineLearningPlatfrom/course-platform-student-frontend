@@ -16,8 +16,9 @@ const CourseDetails = () => {
   const { enrolled, setEnrolled } = useContext(CourseContext);
   const navigate = useNavigate();
   const { courseId } = useParams();
-  const { BackendAPI } = useApi();
-  const studentToken = localStorage.getItem('studentToken');
+  const studentToken = localStorage.getItem('studentToken')
+  const { BackendAPI, startProgressTracking } = useApi();
+
   const {
     course,
     setCourse,
@@ -91,6 +92,19 @@ const CourseDetails = () => {
       console.log(error);
     }
   };
+
+  //start progress
+  const handleProgress = async(courseId) => {
+    try{
+      const studentToken = localStorage.getItem("studentToken");
+      //progress tracking for the course will be started when enrol now button is clicked
+      console.log("Sending progress tracking for:", courseId);
+      if(studentToken){
+        await startProgressTracking(courseId);}
+    }catch(error){
+      console.log(error); 
+    }
+  }
 
   // Function to format dates
   const formatDate = (dateString) => {
@@ -263,11 +277,12 @@ const CourseDetails = () => {
                   Join thousands of students already enrolled in this course.
                 </p>
                 <button
-                  onClick={() => {
+                  onClick={async() => {
                     setEnrolled(true);
                     if (!studentToken) {
                       navigate("/auth");
                     } else {
+                       await handleProgress(course.course_id);
                       if (isActive) {
                         handleEnrollment(course.course_id);
                       } else {

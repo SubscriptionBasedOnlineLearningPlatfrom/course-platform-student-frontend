@@ -25,7 +25,6 @@ const CourseContentPage = () => {
     updateProgressPercentage(BackendAPI, courseId);
   }, [completedModules]);
 
-  // Fetch data from backend
   //fetch course content 
   useEffect(() => {
     const fetchData = async () => {

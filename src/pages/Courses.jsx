@@ -16,36 +16,30 @@ const Courses = () => {
 
   const navigate = useNavigate();
 
-  // toggle dropdown
   const toggleDropdown = () => setIsOpen(!isOpen);
 
-  // handle level change
   const handleLevel = (selectedLevel) => {
     setLevel(selectedLevel);
     setIsOpen(false);
   };
 
-  // fetch courses from backend on mount
   useEffect(() => {
     const fetchCourses = async () => {
       try {
         const data = await getAllCourses();
 
-        // map backend fields to frontend
         const mappedCourses = data.map((course) => ({
           id: course.course_id,
           name: course.course_title,
           description: course.course_description || "No description available",
-
-          image: course.thumbnail_url || course1, // use thumbnail_url from backend, fallback to placeholder
-
+          image: course.thumbnail_url || course1, 
           level: course.level,
           category: course.category,
         }));
 
         setCourses(mappedCourses);
       } catch (err) {
-        setError(err.message); // backend error
+        setError(err.message); 
       } finally {
         setLoading(false);
       }
@@ -54,7 +48,7 @@ const Courses = () => {
     fetchCourses();
   }, []);
 
-  // filter based on search + level
+  //filter based on search, level
   const filteredCourses = courses.filter(
     (course) =>
       (course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -139,7 +133,7 @@ const Courses = () => {
                 alt={course.name}
                 className="w-full h-48 object-cover"
                 onError={(e) => {
-                  e.target.src = course1; // Fallback to placeholder if thumbnail fails to load
+                  e.target.src = course1;
                 }}
               />
               <div className="p-4 flex flex-col justify-between flex-grow">

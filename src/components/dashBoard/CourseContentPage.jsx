@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../../contexts/ApiContext";
 import AssignmentSection from "../../components/dashBoard/AssignmentSection.jsx";
 import { QuizComponent } from "../quizes/Quiz";
+import { CourseContext } from "@/contexts/CourseContext";
 
 const CourseContentPage = () => {
   const { getCourseContent, updateProgress } = useApi();
@@ -13,10 +14,21 @@ const CourseContentPage = () => {
   const [openModule, setOpenModule] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const {updateProgressPercentage} = useContext(CourseContext);
+  const {BackendAPI} = useApi();
 
   const navigate = useNavigate();
 
+
+  // update progress percentage
+  useEffect(() => {
+    updateProgressPercentage(BackendAPI, courseId);
+  }, [completedModules]);
+
+  // Fetch data from backend
+
   //fetch course content 
+
   useEffect(() => {
     const fetchData = async () => {
       try {

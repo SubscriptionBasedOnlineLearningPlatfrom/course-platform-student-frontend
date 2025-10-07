@@ -3,9 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa6";
 import { CourseContext } from "../../contexts/CourseContext";
+import { FaArrowRight } from "react-icons/fa6";
 
 const RelatedCourses = () => {
-
   const navigate = useNavigate();
   const { category, relatedCourses } = useContext(CourseContext);
 
@@ -48,7 +48,6 @@ const RelatedCourses = () => {
     return stars;
   };
 
-
   return (
     <div className="mt-12">
       {/* Section Header */}
@@ -57,19 +56,12 @@ const RelatedCourses = () => {
           <h2 className="text-2xl font-bold text-gray-900 flex items-center">
             Related Courses
           </h2>
-          <button className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center">
+          <button
+            className="text-blue-600 hover:text-blue-800 font-medium text-sm flex items-center gap-1"
+            onClick={() => navigate("/courses")}
+          >
             View All
-            <svg
-              className="w-4 h-4 ml-1"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <FaArrowRight />
           </button>
         </div>
 
@@ -130,28 +122,19 @@ const RelatedCourses = () => {
                       </span>
                     </div>
 
-                    {/* Rating */}
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center text-yellow-400">
-                        {renderStars(course.rating)}
-                      </div>
-                      <span className="text-sm font-medium text-gray-700">
-                        {course.rating}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({(course.total_students ?? course.students_count ?? 0).toLocaleString()})
-                      </span>
-                    </div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
                   <span className="flex items-center gap-1">
-                      Updated{" "}
-                    {new Date(course.updated_at).toLocaleDateString()}
+                    Updated {new Date(course.updated_at).toLocaleDateString()}
                   </span>
                   <button
-                    onClick={() => navigate("/displayCourses")}
+                    onClick={() => {
+                      navigate(`/displayCourses/${course.course_id}`)
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    
                     className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors duration-200"
                   >
                     View Course
@@ -164,7 +147,10 @@ const RelatedCourses = () => {
 
         {/* Show More Button */}
         <div className="text-center mt-8">
-          <button className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105">
+          <button
+            onClick={() => navigate("/courses")}
+            className="bg-gradient-to-r from-[#0173d1] to-[#85c1f3] hover:from-[#85c1f3] hover:to-[#0173d1] text-white font-semibold px-8 py-3 rounded-xl transition-all duration-200 transform hover:scale-105"
+          >
             Explore More Courses
           </button>
         </div>

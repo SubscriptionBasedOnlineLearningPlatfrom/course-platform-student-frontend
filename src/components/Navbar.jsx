@@ -7,11 +7,11 @@ import { useApi } from "@/contexts/ApiContext";
 import { FaUserEdit } from "react-icons/fa";
 import { MdPayment } from "react-icons/md";
 import { FaExchangeAlt } from "react-icons/fa";
-import { BiSolidDashboard } from 'react-icons/bi';
+import { BiSolidDashboard } from "react-icons/bi";
 import { HiOutlineLogout } from "react-icons/hi";
 import { Button } from "@headlessui/react";
 import { FiAlertTriangle } from "react-icons/fi";
-import { BsPencilSquare } from 'react-icons/bs';
+import { BsPencilSquare } from "react-icons/bs";
 import { toast } from "react-toastify";
 
 const Navbar = () => {
@@ -98,9 +98,9 @@ const Navbar = () => {
         }
       );
       if (response.status === 200) {
-      toast.success("Subscription activated successfully");
-      window.location.href = response.data.session_url;
-    }
+        toast.success("Subscription activated successfully");
+        window.location.href = response.data.session_url;
+      }
     } catch (error) {
       toast.error("Failed to activate subscription ");
       console.error(error);
@@ -114,7 +114,9 @@ const Navbar = () => {
   const handleUpload = async () => {
     if (!file) {
       toast.warn("Please select a file first ⚠️");
+      return;
     }
+
     const formData = new FormData();
     formData.append("file", file);
 
@@ -130,11 +132,16 @@ const Navbar = () => {
           },
         }
       );
-
+      console.log(response)
       if (response.status === 200) {
-      setUrl(response.data.profile.image_url);
-      toast.success("Profile picture uploaded successfully");
-    }
+        // Update the user state directly
+        setUser((prevUser) => ({
+          ...prevUser,
+          user_profile: response.data.profile.user_profile, // set new image URL
+        }));
+        toast.success("Profile picture uploaded successfully");
+        setFile(null); // Clear selected file
+      }
     } catch (error) {
       toast.error("Upload failed! Please try again.");
       console.error(error);
@@ -267,7 +274,7 @@ const Navbar = () => {
       )}
 
       {/* Profile Sidebar */}
-      
+
       {isProfileOpen && (
         <div
           ref={profileRef}
@@ -320,13 +327,13 @@ const Navbar = () => {
             <li>
               <button
                 onClick={() => {
-                  setIsProfileOpen(false);  
+                  setIsProfileOpen(false);
                   navigate("/dashboard");
                 }}
                 className="flex items-center justify-between w-full px-4 py-2 rounded-md hover:bg-blue-50 hover:text-blue-600 transition font-medium"
               >
                 <div className="flex items-center gap-2">
-                  <BiSolidDashboard className="w-5 h-5"/>
+                  <BiSolidDashboard className="w-5 h-5" />
                   <span>Go to Dashboard</span>
                 </div>
               </button>

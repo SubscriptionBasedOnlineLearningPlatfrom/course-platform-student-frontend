@@ -44,9 +44,7 @@ export const AuthPage = () => {
         headers: { "Content-Type": "application/json" },
         withCredentials: true,
       });
-      console.log(res);
       const data = res.data;
-      console.log(data)
       if (data?.studentToken) localStorage.setItem("studentToken", data.studentToken);
       window.location.href = "/";
     } catch (err) {
@@ -61,9 +59,6 @@ export const AuthPage = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    window.location.href = `${BackendAPI}/auth/google`;
-  };
 
   const handleResetPasswordRequest = async () => {
     if (!resetEmail) return alert("Enter your email");
@@ -152,17 +147,9 @@ export const AuthPage = () => {
       </Button>
 
       {/* Google Login */}
-      <div className="relative my-6">
-        <Separator />
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-        </div>
-        <Button variant="outline" className="w-full mt-4 flex items-center justify-center gap-2" type="button" onClick={handleGoogleLogin}>
-          Continue with Google
-        </Button>
-      </div>
+      
 
-      {/* Forgot Password */}
+      {/* Forgot Password
       {mode === "login" && (
         <div className="mt-3">
           <button
@@ -193,7 +180,7 @@ export const AuthPage = () => {
             </div>
           )}
         </div>
-      )}
+      )} */}
     </form>
   );
 

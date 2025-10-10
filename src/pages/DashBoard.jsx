@@ -29,7 +29,6 @@ const DashBoard = () => {
 
   useEffect(() => {
     (async () => {
-      console.log("Fetching dashboard data...");
       await Promise.all([
         fetchDashboardData(BackendAPI),
         fetchEnrolledCourses(BackendAPI),

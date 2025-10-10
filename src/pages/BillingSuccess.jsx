@@ -29,7 +29,6 @@ export default function BillingSuccess() {
             },
           }
         );
-        console.log(response)
         if (response.data.ok) {
           setMsg("✅ Enrollment successful!");
           navigate("/dashboard");
@@ -37,7 +36,6 @@ export default function BillingSuccess() {
           setMsg("⚠️ Could not confirm payment.");
         }
       } catch (e) {
-        console.log(e);
         console.error(e);
         setMsg("Error confirming payment.");
       }

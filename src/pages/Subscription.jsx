@@ -55,7 +55,6 @@ const Subscription = () => {
           },
         }
       );
-      console.log(response);
       window.location.href = response.data.session_url;
 
     } catch (error) {

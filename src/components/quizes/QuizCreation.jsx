@@ -14,7 +14,7 @@ export const QuizCreation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showNextQuestion, setShowNextQuestion] = useState(false);
-  const {courseId} = useParams();
+  const {lessonId} = useParams();
 
   const navigate = useNavigate();
   const { BackendAPI } = useApi();
@@ -27,7 +27,7 @@ export const QuizCreation = () => {
       setError(null);
       try {
         // Replace this ID with whatever you need or pass as prop
-        const lessonId = "d493f590-6258-4959-9d2f-21f512957164";
+        // const lessonId = "d493f590-6258-4959-9d2f-21f512957164";
         const response = await axios.get(`${BackendAPI}/quizzes/${lessonId}`);
         const data = response.data;
         console.log("Fetched quiz data:", data.full);

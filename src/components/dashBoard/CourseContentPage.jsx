@@ -65,7 +65,7 @@ const CourseContentPage = () => {
                     url: chap.assignment_url,
                   },
                   {
-                    id: `${chap.lesson_id}-quiz`,
+                    id: `${chap.lesson_id}`,
                     title: "Quiz",
                     type: "quiz",
                   },
@@ -98,7 +98,7 @@ const CourseContentPage = () => {
     } else if (res.type === "pdf") {
       window.open(res.url, "_blank", "noopener,noreferrer");
     } else if (res.type === "quiz") {
-      navigate(`/quiz/${courseId}`);
+      navigate(`/quiz/${res.id}`);
     }
   };
 

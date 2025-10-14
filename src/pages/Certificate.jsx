@@ -118,8 +118,8 @@
 // export default CertificatePage;
 import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
-import { CertificateForm } from "../components/Certificate/CertificateForm";
-import { CertificatePreview } from "../components/Certificate/CertificatePreview";
+import { CertificateForm } from "../components/certificate/CertificateForm";
+import { CertificatePreview } from "../components/certificate/CertificatePreview";
 import { generateCertificatePDF } from "../services/pdfGenerator";
 import { GraduationCap, Award, Sparkles } from "lucide-react";
 import { toast } from "sonner";

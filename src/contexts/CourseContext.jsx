@@ -15,13 +15,34 @@ export const CourseProvider = ({ children }) => {
   const [progressPercentage, setProgressPercentage] = useState(0);
   const [quizMark, setQuizMark] = useState(0);
 
-  const studentToken = localStorage.getItem("studentToken");
-
   const fetchCourseDetails = async (BackendAPI, courseId) => {
-    const response = await axios.get(`${BackendAPI}/courses/${courseId}`);
-    if (response.status === 200) {
-      setCourse(response.data.course);
-      setModules(response.data.modules || []);
+    if (!BackendAPI || !courseId) {
+      throw new Error("Missing BackendAPI base url or courseId");
+    }
+
+    const token = localStorage.getItem("studentToken");
+
+    try {
+      const response = await axios.get(`${BackendAPI}/courses/${courseId}` , {
+        headers: token
+          ? {
+              Authorization: `Bearer ${token}`,
+            }
+          : undefined,
+      });
+
+      if (response.status === 200) {
+        setCourse(response.data.course);
+        setModules(response.data.modules || []);
+        return response.data;
+      }
+
+      throw new Error(`Unexpected status code ${response.status}`);
+    } catch (error) {
+      console.error("Error fetching course details:", error);
+      setCourse(null);
+      setModules([]);
+      throw error;
     }
   };
 

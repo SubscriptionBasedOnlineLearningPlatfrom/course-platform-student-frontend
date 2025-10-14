@@ -117,7 +117,7 @@
 
 // export default CertificatePage;
 import { useState, useEffect, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { CertificateForm } from "../components/certificate/CertificateForm";
 import { CertificatePreview } from "../components/certificate/CertificatePreview";
 import { generateCertificatePDF } from "../services/pdfGenerator";
@@ -128,6 +128,7 @@ import {  useApi } from "../contexts/ApiContext";
 
 const CertificatePage = () => {
   const { courseId } = useParams(); // Get courseId from the URL
+  const navigate = useNavigate();
   const { fetchCourseDetails, course } = useContext(CourseContext);
   const { BackendAPI } = useApi();
   
@@ -139,10 +140,30 @@ const CertificatePage = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isLoadingCourse, setIsLoadingCourse] = useState(true);
 
+  // Check authentication on mount
+  useEffect(() => {
+    const token = localStorage.getItem("studentToken");
+    if (!token) {
+      toast.error("Please login to generate your certificate");
+      navigate("/auth");
+      return;
+    }
+  }, [navigate]);
+
   // Effect to fetch the course details when the page loads
   useEffect(() => {
     const loadCourseDetails = async () => {
-      if (!courseId || !BackendAPI) return;
+      if (!courseId || !BackendAPI) {
+        setIsLoadingCourse(false);
+        return;
+      }
+
+      // Check if user is logged in
+      const token = localStorage.getItem("studentToken");
+      if (!token) {
+        setIsLoadingCourse(false);
+        return;
+      }
       
       try {
         setIsLoadingCourse(true);
@@ -150,23 +171,25 @@ const CertificatePage = () => {
       } catch (error) {
         console.error("Failed to fetch course details:", error);
         // If course not found or invalid ID, set a default course name
+        const errorMessage = error.response?.data?.error || error.message;
         setCertificateData(prev => ({ 
           ...prev, 
           courseName: `Course ${courseId}` 
         }));
-        toast.error("Could not load course information. Using default course name.");
+        toast.error(`Could not load course information: ${errorMessage}`);
       } finally {
         setIsLoadingCourse(false);
       }
     };
 
     loadCourseDetails();
-  }, [courseId, BackendAPI, fetchCourseDetails]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courseId, BackendAPI]);
 
   // Effect to update certificate data when course is loaded
   useEffect(() => {
     if (course) {
-      const courseName = course.title || course.name || "Unknown Course";
+      const courseName = course.course_title || course.title || course.name || "Unknown Course";
       setCertificateData(prev => ({ 
         ...prev, 
         courseName: courseName 
@@ -213,7 +236,7 @@ const CertificatePage = () => {
             {isLoadingCourse 
               ? "Loading course information..." 
               : course 
-                ? `Generate your certificate for "${course.title || course.name || 'this course'}"`
+                ? `Generate your certificate for "${course.course_title || course.title || course.name || 'this course'}"`
                 : "Confirm your details below to generate your official certificate."
             }
           </p>

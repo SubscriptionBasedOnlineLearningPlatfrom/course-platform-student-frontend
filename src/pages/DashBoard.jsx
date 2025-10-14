@@ -1,9 +1,9 @@
 import React, { use, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import EnrolledCourses from "../Components/dashBoard/EnrolledCourses";
+import EnrolledCourses from "../components/dashBoard/EnrolledCourses";
 import { useNavigate, useParams } from "react-router-dom";
-import { useApi } from "../Contexts/APIContext";
-import { CourseContext } from "../Contexts/CourseContext";
+import { useApi } from "../contexts/APIContext";
+import { CourseContext } from "../contexts/CourseContext";
 
 const KPI = ({ label, value, sub }) => (
   <div className="bg-white rounded-2xl shadow p-5">

@@ -2,7 +2,7 @@ import React, { use, useContext, useEffect, useState } from "react";
 import axios from "axios";
 import EnrolledCourses from "../components/dashBoard/EnrolledCourses";
 import { useNavigate, useParams } from "react-router-dom";
-import { useApi } from "../contexts/APIContext";
+import { useApi } from "../contexts/ApiContext";
 import { CourseContext } from "../contexts/CourseContext";
 
 const KPI = ({ label, value, sub }) => (

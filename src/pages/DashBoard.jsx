@@ -1,6 +1,6 @@
 import React, { use, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import EnrolledCourses from "../Components/DashBoard/EnrolledCourses";
+import EnrolledCourses from "../Components/dashBoard/EnrolledCourses";
 import { useNavigate, useParams } from "react-router-dom";
 import { useApi } from "../Contexts/APIContext";
 import { CourseContext } from "../Contexts/CourseContext";

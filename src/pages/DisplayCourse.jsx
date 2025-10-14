@@ -1,8 +1,8 @@
 import React from 'react'
-import CourseDetails from '../Components/Courses/CourseDetails'
-import CourseModules from '../Components/Courses/CourseModules'
-import RelatedCourses from '../Components/Courses/RelatedCourses'
-import Comments from '../Components/Courses/Comments'
+import CourseDetails from '../components/courses/CourseDetails'
+import CourseModules from '../components/courses/CourseModules'
+import RelatedCourses from '../components/courses/RelatedCourses'
+import Comments from '../components/courses/Comments'
 
 const DisplayCourse = () => {
   return (

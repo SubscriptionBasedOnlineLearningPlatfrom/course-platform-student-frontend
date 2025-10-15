@@ -2,15 +2,20 @@ import React, { createContext, useContext } from "react";
 import axios from "axios";
 
 // =======================
+// BASE URL 
+// =======================
+const baseURL = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+
+// =======================
 // PRIVATE API (with token)
 // =======================
 const api = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL,
 });
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("studentToken"); 
+    const token = localStorage.getItem("studentToken");
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -29,7 +34,7 @@ api.interceptors.response.use(
 // PUBLIC API (no token)
 // =======================
 const publicApi = axios.create({
-  baseURL: "http://localhost:4000",
+  baseURL,
 });
 
 publicApi.interceptors.response.use(
@@ -59,7 +64,7 @@ const getCoursesWithRatings = async () => {
 };
 
 const getCourseContent = async (courseId) => {
-  const response = await api.get(`/student/course/${courseId}/content`); 
+  const response = await api.get(`/student/course/${courseId}/content`);
   return response.data;
 };
 
@@ -71,18 +76,18 @@ const startProgressTracking = async (courseId) => {
 const updateProgress = async (moduleId, checked) => {
   const response = await api.patch(`/student/course/update-progress`, {
     moduleId,
-    isCompleted: checked, 
+    isCompleted: checked,
   });
   return response.data;
 };
 
 const getProgress = async (courseId) => {
-  const response = await api.get(`/student/course/${courseId}/progress`); 
+  const response = await api.get(`/student/course/${courseId}/progress`);
   return response.data;
 };
 
 const getSubmission = async (courseId) => {
-  const response = await api.get(`/student/assignments/${courseId}`); 
+  const response = await api.get(`/student/assignments/${courseId}`);
   return response.data;
 };
 
@@ -98,7 +103,6 @@ const addSubmission = async (courseId, file) => {
   return response.data;
 };
 
-
 const searchCourses = async (query) => {
   if (!query || query.trim().length < 1) return [];
   const response = await publicApi.get(`/student/courses?search=${encodeURIComponent(query.trim())}`);
@@ -111,15 +115,15 @@ const searchCourses = async (query) => {
 const ApiContext = createContext({});
 
 export const ApiProvider = ({ children }) => {
-  const BackendAPI = "https://course-platform-backend-ten.vercel.app/student";
-  const frontendAPI = "http://localhost:5173"
+  const BackendAPI = `${baseURL}/student`;
+  const frontendAPI = window.location.origin;
 
   return (
     <ApiContext.Provider
       value={{
         api,         // private API instance
         publicApi,   // public API instance
-        BackendAPI,  // base URL for students
+        BackendAPI,  // dynamic backend URL
         getAllCourses,
         getFeaturedCourses,
         getCoursesWithRatings,
@@ -137,5 +141,4 @@ export const ApiProvider = ({ children }) => {
   );
 };
 
-// Hook for easy access
 export const useApi = () => useContext(ApiContext);

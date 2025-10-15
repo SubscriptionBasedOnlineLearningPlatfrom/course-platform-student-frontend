@@ -1,9 +1,9 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/Components/Home/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/Home/ui/card";
-import { Badge } from "@/Components/Home/ui/badge";
-import { Input } from "@/Components/Home/ui/input";
+import { Button } from "@/components/home/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/home/ui/card";
+import { Badge } from "@/components/home/ui/badge";
+import { Input } from "@/components/home/ui/input";
 import { BookOpen, Users, Award, Star, Search, Play, Clock, CheckCircle } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useApi } from "../contexts/ApiContext";

@@ -5,11 +5,11 @@ import { Toaster } from "sonner";
 import "./App.css";
 
 import Home from "./pages/Home";
-import Navbar from "./Components/Navbar";
+import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import DisplayCourse from "./pages/DisplayCourse";
 import DashBoard from "./pages/DashBoard";
-import CourseProgress from "./components/DashBoard/CourseProgress";
+import CourseProgress from "./components/dashBoard/CourseProgress";
 import CertificatePage from "./pages/Certificate";
 import CourseContentPage from "./components/dashBoard/CourseContentPage";
 import Courses from "./pages/Courses";

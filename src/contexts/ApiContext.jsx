@@ -111,7 +111,7 @@ const searchCourses = async (query) => {
 const ApiContext = createContext({});
 
 export const ApiProvider = ({ children }) => {
-  const BackendAPI = "http://localhost:4000/student";
+  const BackendAPI = "https://course-platform-backend-ten.vercel.app/student";
   const frontendAPI = "http://localhost:5173"
 
   return (

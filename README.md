@@ -1,12 +1,109 @@
-# React + Vite
+# 🎓 ProLearnX Student Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Student-facing web application for the ProLearnX online learning platform. Browse courses, enroll, track progress, take quizzes, and generate certificates.
 
-Currently, two official plugins are available:
+## 🚀 Tech Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Framework**: React 19 + Vite 7
+- **Routing**: React Router DOM v7
+- **Styling**: Tailwind CSS
+- **UI Components**: Radix UI, Lucide Icons
+- **HTTP Client**: Axios
+- **PDF Generation**: jsPDF
+- **Notifications**: React Toastify, Sonner
+- **Testing**: Jest
 
-## Expanding the ESLint configuration
+## ✨ Key Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- 🔐 User authentication (Register/Login)
+- 📚 Browse and search courses
+- 📊 Personal learning dashboard
+- 📈 Progress tracking
+- 🎯 Interactive quizzes
+- 📄 Certificate generation (PDF)
+- 💳 Stripe payment integration
+- 💬 Course comments and ratings
+- 👤 User profile management
+
+## 📋 Prerequisites
+
+- Node.js (v16+)
+- Backend server running on `http://localhost:4000`
+
+## 🛠️ Installation
+
+```bash
+# Navigate to directory
+cd course-platform-student-frontend
+
+# Install dependencies
+npm install
+
+# Create .env file
+echo "VITE_BACKEND_URL=http://localhost:4000" > .env
+
+# Start development server
+npm run dev
+```
+
+App runs on `http://localhost:5173`
+
+## 📜 Available Scripts
+
+```bash
+npm run dev      # Start dev server
+npm run build    # Build for production
+npm test         # Run tests
+npm run lint     # Lint code
+```
+
+## 🎨 Main Routes
+
+- `/` - Home page
+- `/auth` - Login/Register
+- `/dashboard` - Student dashboard
+- `/courses` - Browse courses
+- `/courses/:id/content` - Course content
+- `/certificate/:id` - Generate certificate
+- `/subscription/:id` - Payment checkout
+
+## 🔌 API Integration
+
+Uses Axios with Context API for state management:
+- `ApiContext` - API calls and authentication
+- `CourseContext` - Course state management
+
+## 🎓 Certificate Feature
+
+Auto-generates professional PDF certificates with:
+- Company branding
+- Student name (user input)
+- Course title (auto-fetched)
+- Issue date
+- Digital signature
+
+## 🐛 Troubleshooting
+
+**Backend connection issues:**
+```bash
+# Check backend is running
+cd ../course-platform-backend && npm start
+
+# Verify .env has correct VITE_BACKEND_URL
+```
+
+**CORS errors:**
+- Ensure backend allows `http://localhost:5173` in CORS config
+
+## 📝 License
+
+MIT
+
+## 📞 Support
+
+Email: parkkavisivakaran72@gmail.com
+
+---
+
+**ProLearnX - Learn Smart. Grow Fast** ❤️
+```

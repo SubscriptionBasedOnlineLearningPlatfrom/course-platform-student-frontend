@@ -6,7 +6,7 @@ import { QuizComponent } from "../quizes/Quiz";
 import { CourseContext } from "@/contexts/CourseContext";
 
 const CourseContentPage = () => {
-  const { getCourseContent, updateProgress } = useApi();
+  const { getCourseContent, updateProgress, getPlan } = useApi();
   const { courseId } = useParams();
   const [courseData, setCourseData] = useState(null);
   const [currentVideo, setCurrentVideo] = useState(null);
@@ -14,21 +14,23 @@ const CourseContentPage = () => {
   const [openModule, setOpenModule] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
-  const {updateProgressPercentage} = useContext(CourseContext);
-  const {BackendAPI} = useApi();
-
+  const [plan, setPlan] = useState(null);
+  const { updateProgressPercentage } = useContext(CourseContext);
+  const { BackendAPI } = useApi();
   const navigate = useNavigate();
-
 
   // update progress percentage
   useEffect(() => {
     updateProgressPercentage(BackendAPI, courseId);
   }, [completedModules]);
 
-  //fetch course content 
+  // fetch course content and plan
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const planData = await getPlan();
+        setPlan(planData?.plan);
+
         const res = await getCourseContent(courseId);
         if (res?.modules) {
           const completed = {};
@@ -68,30 +70,32 @@ const CourseContentPage = () => {
                     id: `${chap.lesson_id}`,
                     title: "Quiz",
                     type: "quiz",
+                    locked: planData?.plan === "Basic", // mark as locked if Basic plan
                   },
+
                 ].filter(Boolean),
               })),
             })),
           };
 
-          setCompletedModules(completed); // set initial checkbox states
+          setCompletedModules(completed);
           setCourseData(content);
         }
       } catch (err) {
-        console.error("Error fetching course content:", err);
+        console.error("Error fetching course content or plan:", err);
       }
     };
     fetchData();
-  }, [courseId, getCourseContent]);
+  }, [courseId, getCourseContent, getPlan]);
 
-  //track window resize
+  // track window resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  //handle video, pdf, quiz clicks
+  // handle video, pdf, quiz clicks
   const handleResourceClick = (res) => {
     if (res.type === "video") {
       setCurrentVideo(res.url);
@@ -102,12 +106,11 @@ const CourseContentPage = () => {
     }
   };
 
-  //toggle module completion
+  // toggle module completion
   const toggleModuleCompleted = async (moduleId) => {
     const newState = !completedModules[moduleId];
-
     try {
-      await updateProgress(moduleId, newState); // API call
+      await updateProgress(moduleId, newState);
       setCompletedModules((prev) => ({
         ...prev,
         [moduleId]: newState,
@@ -117,12 +120,12 @@ const CourseContentPage = () => {
     }
   };
 
-  //accordion toggle
+  // accordion toggle
   const handleToggleAccordion = (moduleId) => {
     setOpenModule(openModule === moduleId ? null : moduleId);
   };
 
-  //video height based on window size
+  // video height based on window size
   const getVideoHeight = () => {
     if (windowWidth >= 2560) return "600px";
     if (windowWidth >= 1440) return "400px";
@@ -223,10 +226,23 @@ const CourseContentPage = () => {
                         {chapter.resources.map((res) => (
                           <li
                             key={res.id}
-                            className="cursor-pointer hover:text-blue-600"
-                            onClick={() => handleResourceClick(res)}
+                            className={`flex items-center space-x-2 ${
+                              res.locked
+                                ? "text-gray-400 cursor-not-allowed"
+                                : "cursor-pointer hover:text-blue-600"
+                            }`}
+                            onClick={() => {
+                              if (res.locked) return; 
+                              handleResourceClick(res);
+                            }}
                           >
-                            {res.title} ({res.type})
+                            <span>{res.title} ({res.type})</span>
+                            {res.locked && (
+                              <span className="text-sm flex items-center space-x-1">
+                                <span role="img" aria-label="locked">🔒</span>
+                                <span>Upgrade to Pro to access quizzes</span>
+                              </span>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -276,7 +292,6 @@ const CourseContentPage = () => {
           <AssignmentSection courseId={courseId} />
         </div>
       </div>
-
     </div>
   );
 };

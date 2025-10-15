@@ -151,7 +151,7 @@ const CourseDetails = () => {
               <div className="md:w-1/3">
                 <img
                   src={
-                    course.course_image ||
+                    course.thumbnail_url ||
                     "https://images.unsplash.com/photo-1549924231-f129b911e442?fit=crop&w=1000&q=80"
                   }
                   alt={course.course_title || "Course Image"}

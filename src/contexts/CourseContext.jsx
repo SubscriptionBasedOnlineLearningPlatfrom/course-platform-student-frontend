@@ -62,6 +62,7 @@ export const CourseProvider = ({ children }) => {
 
   const fetchDashboardData = async (BackendAPI) => {
     try {
+      const studentToken = localStorage.getItem("studentToken");
       const response = await axios.get(`${BackendAPI}/dashboard`, {
         headers: {
           Authorization: `Bearer ${studentToken}`,
@@ -79,6 +80,7 @@ export const CourseProvider = ({ children }) => {
 
   const fetchEnrolledCourses = async (BackendAPI) => {
     try {
+      const studentToken = localStorage.getItem("studentToken");
       const response = await axios.get(
         `${BackendAPI}/dashboard/enrolled-courses`,
         {
@@ -101,6 +103,7 @@ export const CourseProvider = ({ children }) => {
   );
 
   const checkPaymentActive = async (BackendAPI) => {
+    const studentToken = localStorage.getItem("studentToken");
     const response = await axios.get(`${BackendAPI}/subscription/check`,{
       headers: {
         Authorization : `Bearer ${studentToken}`
@@ -117,6 +120,7 @@ export const CourseProvider = ({ children }) => {
 
   const checkEnrollment = async (BackendAPI, courseId) => {
     let isEnrollment = false;
+    const studentToken = localStorage.getItem("studentToken");
     const response = await axios.get(`${BackendAPI}/courses/check-enrollment/${courseId}`,{
       headers: {
         Authorization : `Bearer ${studentToken}`
@@ -130,6 +134,7 @@ export const CourseProvider = ({ children }) => {
 
   const updateProgressPercentage = async (BackendAPI, courseId) => {
     try {
+      const studentToken = localStorage.getItem("studentToken");
       const response = await axios.put(`${BackendAPI}/courses/progress-percentage/${courseId}`, {}, {
         headers: {
           Authorization: `Bearer ${studentToken}`,
@@ -146,6 +151,7 @@ export const CourseProvider = ({ children }) => {
 
   const getQuizMark = async (BackendAPI, courseId) => {
     try {
+      const studentToken = localStorage.getItem("studentToken");
       const response = await axios.get(`${BackendAPI}/courses/quiz-marks/${courseId}`, {
         headers: {
           Authorization: `Bearer ${studentToken}`,

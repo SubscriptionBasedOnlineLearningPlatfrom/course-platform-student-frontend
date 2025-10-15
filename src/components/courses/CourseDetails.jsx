@@ -151,7 +151,7 @@ const CourseDetails = () => {
               <div className="md:w-1/3">
                 <img
                   src={
-                    course.course_image ||
+                    course.thumbnail_url ||
                     "https://images.unsplash.com/photo-1549924231-f129b911e442?fit=crop&w=1000&q=80"
                   }
                   alt={course.course_title || "Course Image"}
@@ -179,9 +179,9 @@ const CourseDetails = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      {course.language || "English"}
+                      {course.level || "Beginner"}
                     </div>
-                    <div className="text-sm text-gray-500">Language</div>
+                    <div className="text-sm text-gray-500">Level</div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold flex items-center gap-2">

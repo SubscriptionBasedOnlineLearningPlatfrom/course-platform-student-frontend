@@ -14,7 +14,7 @@ export const QuizCreation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showNextQuestion, setShowNextQuestion] = useState(false);
-  const {lessonId} = useParams();
+  const {lessonId,courseId} = useParams();
 
   const navigate = useNavigate();
   const { BackendAPI } = useApi();
@@ -181,7 +181,7 @@ export const QuizCreation = () => {
           </div>
           <div className="text-center">
             <button
-              onClick={QuizMarks}
+              onClick={() => {QuizMarks,navigate(`/courses/${courseId}/content`)}}
               className="bg-[#0173d1] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg"
             >
               → Go to Content Page
@@ -226,9 +226,7 @@ export const QuizCreation = () => {
               : currentQ.messageForIncorrectAnswer}
           </p>
         </div>
-        <div>
-          <button>Go to next Question</button>
-        </div>
+       
       </div>
     );
   }

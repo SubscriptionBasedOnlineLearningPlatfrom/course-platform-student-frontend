@@ -75,7 +75,7 @@ const RelatedCourses = () => {
               {/* Course Image */}
               <div className="relative overflow-hidden">
                 <img
-                  src={course.thumbnail_url}
+                  src={course.thumbnail_url?.trim() || "https://via.placeholder.com/400x200?text=No+Image"}
                   alt={course.course_title}
                   className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
                 />

@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Area,
   AreaChart,
+  Label,
 } from "recharts";
 import { PieChart, Pie, Cell, Legend } from "recharts";
 import { useApi } from "../../contexts/ApiContext";
@@ -177,9 +178,24 @@ const CourseProgress = () => {
                   <stop offset="95%" stopColor="#82ca9d" stopOpacity={0} />
                 </linearGradient>
               </defs>
+
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis allowDecimals={false} />
+              <XAxis dataKey="date">
+                <Label
+                  value="Date Completed"
+                  offset={-2}
+                  position="insideBottom"
+                  style={{ fill: "#555", fontSize: 14 }}
+                />
+              </XAxis>
+              <YAxis allowDecimals={false}>
+                <Label
+                  value="Modules Completed"
+                  angle={-90}
+                  position="insideLeft"
+                  style={{ textAnchor: "middle", fill: "#555", fontSize: 14 }}
+                />
+              </YAxis>
               <Tooltip />
               <Area
                 type="monotone"

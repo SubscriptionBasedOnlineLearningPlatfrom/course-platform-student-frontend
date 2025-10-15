@@ -129,13 +129,15 @@ const Courses = () => {
               className="bg-white rounded-lg shadow-md overflow-hidden h-full flex flex-col hover:shadow-xl transition duration-300"
             >
               <img
-                src={course.image}
-                alt={course.name}
-                className="w-full h-48 object-cover"
-                onError={(e) => {
-                  e.target.src = course1;
-                }}
+                  src={course.image}
+                  alt={course.name}
+                  loading="lazy"
+                  className="w-full h-48 object-cover"
+                  onError={(e) => {
+                    e.target.src = course1;
+                  }}
               />
+
               <div className="p-4 flex flex-col justify-between flex-grow">
                 <div>
                   <h2 className="text-xl font-bold text-gray-800">{course.name}</h2>

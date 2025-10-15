@@ -68,6 +68,11 @@ const getCourseContent = async (courseId) => {
   return response.data;
 };
 
+const getPlan = async () => {
+  const response = await api.get(`/student/plan`);
+  return response.data;
+};
+
 const startProgressTracking = async (courseId) => {
   const response = await api.post(`/student/course/track-progress`, { courseId });
   return response.data;
@@ -135,6 +140,7 @@ export const ApiProvider = ({ children }) => {
         searchCourses,
         getSubmission,
         addSubmission,
+        getPlan,
       }}
     >
       {children}

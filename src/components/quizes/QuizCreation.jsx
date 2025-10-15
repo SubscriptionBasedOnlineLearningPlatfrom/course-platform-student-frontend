@@ -181,7 +181,7 @@ export const QuizCreation = () => {
           </div>
           <div className="text-center">
             <button
-              onClick={() => {QuizMarks,navigate(`/courses/${courseId}/content`)}}
+              onClick={QuizMarks}
               className="bg-[#0173d1] text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg"
             >
               → Go to Content Page

@@ -58,7 +58,7 @@ function App() {
             path="/courses/:courseId/content"
             element={<CourseContentPage />}
           />
-          <Route path="/quiz/:courseId" element={<QuizCreation />} />
+          <Route path="/quiz/:lessonId" element={<QuizCreation />} />
           <Route path="/subscription/:courseId" element={<Subscription />} />
           <Route path="/billing/success" element={<BillingSuccess />} />
         </Route>

@@ -179,9 +179,9 @@ const CourseDetails = () => {
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold text-blue-600">
-                      {course.language || "English"}
+                      {course.level || "Beginner"}
                     </div>
-                    <div className="text-sm text-gray-500">Language</div>
+                    <div className="text-sm text-gray-500">Level</div>
                   </div>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="text-2xl font-bold flex items-center gap-2">

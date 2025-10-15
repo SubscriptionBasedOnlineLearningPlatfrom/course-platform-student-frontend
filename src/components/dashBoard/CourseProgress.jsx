@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react"; 
 import { useNavigate, useParams } from "react-router-dom";
 import {
   XAxis,
@@ -15,28 +15,33 @@ import { useApi } from "../../contexts/ApiContext";
 const CourseProgress = () => {
   const { courseId } = useParams();
   const navigate = useNavigate();
-  const { getProgress } = useApi();
+  const { getProgress, getPlan } = useApi();
 
   const [courseProgress, setCourseProgress] = useState({
     studentName: "",
     courseTitle: "",
     modules: [],
   });
+  const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProgress = async () => {
+    const fetchData = async () => {
       try {
-        const data = await getProgress(courseId);
-        setCourseProgress(data.modules); 
+        const [progressData, planData] = await Promise.all([
+          getProgress(courseId),
+          getPlan(),
+        ]);
+        setCourseProgress(progressData.modules);
+        setPlan(planData?.plan);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching progress or plan:", err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProgress();
-  }, [courseId, getProgress]);
+    fetchData();
+  }, [courseId, getProgress, getPlan]);
 
   if (loading) {
     return (
@@ -80,13 +85,18 @@ const CourseProgress = () => {
   ];
   const COLORS = ["#0088FE", "#FF8042"];
 
-  //convert timestamp to YYYY-MM-DD
   const lineData = courseProgress.modules
     .filter(m => m.completed)
     .map((m, index) => ({
-      date: m.dateCompleted ? new Date(m.dateCompleted).toISOString().split("T")[0] : null,
+      date: m.dateCompleted
+        ? new Date(m.dateCompleted).toISOString().split("T")[0]
+        : null,
       completedCount: index + 1,
     }));
+
+  const isPro = plan === "Pro";
+  const allCompleted = completedModules === totalModules;
+  const canDownload = isPro && allCompleted;
 
   return (
     <div className="p-6 min-h-[calc(100vh-100px)]">
@@ -94,11 +104,15 @@ const CourseProgress = () => {
       <div className="flex flex-wrap gap-6 mb-10">
         <div className="flex-1 min-w-[250px] bg-white shadow rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold mb-2">Course</h3>
-          <h1 className="text-2xl font-bold text-gray-700">{courseProgress.courseTitle}</h1>
+          <h1 className="text-2xl font-bold text-gray-700">
+            {courseProgress.courseTitle}
+          </h1>
         </div>
         <div className="flex-1 min-w-[250px] bg-white shadow rounded-lg p-6 text-center">
           <h3 className="text-lg font-semibold mb-2">Student</h3>
-          <h1 className="text-2xl font-bold text-gray-700">{courseProgress.studentName}</h1>
+          <h1 className="text-2xl font-bold text-gray-700">
+            {courseProgress.studentName}
+          </h1>
         </div>
         <div className="flex-1 min-w-[250px] bg-white shadow rounded-lg p-6 text-center flex flex-col items-center justify-between">
           <div>
@@ -107,15 +121,21 @@ const CourseProgress = () => {
               {completedModules} / {totalModules} ({progressPercent}%)
             </p>
           </div>
+
           <button
             onClick={() => navigate(`/certificate/${courseId}`)}
-            disabled={completedModules !== totalModules}
-            className={`mt-4 w-full sm:w-auto px-4 py-2 rounded-lg font-semibold transition 
-              ${completedModules === totalModules
+            disabled={!canDownload}
+            className={`mt-4 w-full sm:w-auto px-4 py-2 rounded-lg font-semibold transition ${
+              canDownload
                 ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
           >
-            Download Certificate
+            {isPro
+              ? allCompleted
+                ? "Download Certificate"
+                : "Complete all modules to unlock certificate"
+              : "Upgrade to Pro to get certificate"}
           </button>
         </div>
       </div>
@@ -136,7 +156,10 @@ const CourseProgress = () => {
               cornerRadius={10}
             >
               {pieData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                <Cell
+                  key={`cell-${index}`}
+                  fill={COLORS[index % COLORS.length]}
+                />
               ))}
             </Pie>
             <Tooltip />
@@ -145,7 +168,7 @@ const CourseProgress = () => {
         </div>
 
         {/* Line Chart Card */}
-        <div className="flex-1 bg-white shadow rounded-lg p-6 ">
+        <div className="flex-1 bg-white shadow rounded-lg p-6">
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={lineData}>
               <defs>

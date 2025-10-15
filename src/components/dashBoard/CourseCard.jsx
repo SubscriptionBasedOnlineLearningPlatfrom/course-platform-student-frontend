@@ -55,16 +55,8 @@ const CourseCard = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
         {/* Course Thumbnail */}
-        <div
-          className={`h-48 bg-gradient-to-br ${getCategoryGradient(
-            course.category
-          )} flex items-center justify-center relative`}
-        >
-          <i
-            className={`${getCategoryIcon(
-              course.category
-            )} text-5xl text-white opacity-80`}
-          ></i>
+        <div className={`h-48 flex items-center justify-center relative`}>
+          <img src={course.thumbnail_url?.trim()} alt={course.course_title} />
         </div>
 
         {/* Course Content */}

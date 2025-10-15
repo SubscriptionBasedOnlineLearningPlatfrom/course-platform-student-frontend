@@ -109,6 +109,7 @@ const searchCourses = async (query) => {
   return response.data;
 };
 
+
 // =======================
 // CONTEXT
 // =======================

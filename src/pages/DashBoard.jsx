@@ -72,12 +72,7 @@ const DashBoard = () => {
             Here’s a quick look at your learning progress.
           </p>
         </div>
-        <button
-          onClick={() => navigate("/courses/2/content")}
-          className="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Continue Learning
-        </button>
+        
       </div>
 
       {/* KPIs */}

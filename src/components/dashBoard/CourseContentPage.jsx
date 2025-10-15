@@ -102,7 +102,7 @@ const CourseContentPage = () => {
     } else if (res.type === "pdf") {
       window.open(res.url, "_blank", "noopener,noreferrer");
     } else if (res.type === "quiz") {
-      navigate(`/quiz/${res.id}`);
+      navigate(`/quiz/${res.id}/${courseId}`);
     }
   };
 

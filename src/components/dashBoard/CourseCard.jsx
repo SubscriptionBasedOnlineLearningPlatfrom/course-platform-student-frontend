@@ -55,16 +55,26 @@ const CourseCard = ({
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
         {/* Course Thumbnail */}
-        <div className={`h-48 flex items-center justify-center relative`}>
-          <img src={course.thumbnail_url?.trim()} alt={course.course_title} />
+        {/* Course Thumbnail */}
+        <div className="relative h-48 w-full overflow-hidden group">
+          <img
+            src={
+              course.thumbnail_url?.trim() ||
+              "https://via.placeholder.com/400x250?text=Course+Thumbnail"
+            }
+            alt={course.course_title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+          {/* Optional category badge on top-left */}
+          <div className="absolute top-3 left-3 bg-white/90 text-gray-800 text-xs font-semibold px-3 py-1 rounded-full shadow-sm">
+            {course.category}
+          </div>
         </div>
 
         {/* Course Content */}
         <div className="p-6">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mb-3">
-            {course.category}
-          </span>
-
           {/* Course Title and Instructor */}
           <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
             {course.course_title}

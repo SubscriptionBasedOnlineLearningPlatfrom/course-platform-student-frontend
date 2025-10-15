@@ -25,9 +25,14 @@ const DashBoard = () => {
     fetchDashboardData,
     fetchEnrolledCourses,
   } = useContext(CourseContext);
-  
 
   useEffect(() => {
+    const token = localStorage.getItem("studentToken");
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
     (async () => {
       await Promise.all([
         fetchDashboardData(BackendAPI),

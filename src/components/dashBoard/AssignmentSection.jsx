@@ -79,7 +79,7 @@ const AssignmentSection = ({ courseId }) => {
                 : "Click to select or drag your file here"}
             </p>
             <p className="text-gray-500 text-base mt-1">
-              (Accepted: PDF, DOCX, ZIP)
+              (Accepted: PDF)
             </p>
             <input
               id="file-upload"
